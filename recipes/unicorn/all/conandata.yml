@@ -1,0 +1,4 @@
+sources:
+  "1.0.2-rc1":
+    url: https://github.com/unicorn-engine/unicorn/archive/1.0.2-rc1.tar.gz
+    sha256: d6d71e9854e53b5268792572656d87ccde8ff726e6f9343aab6da46089367983
