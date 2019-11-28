@@ -1,0 +1,7 @@
+sources:
+  "3.47.1":
+    sha256: 1ae3d1cb1de345b258788f2ef6b10a460068034c3fd64f42427a183d8342a6fb
+    url: https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_47_1_RTM/src/nss-3.47.1.tar.gz
+  "3.46.1":
+    sha256: 3bf7e0ed7db98803f134c527c436cc68415ff17257d34bd75de14e9a09d13651
+    url: https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_46_1_RTM/src/nss-3.46.1.tar.gz
