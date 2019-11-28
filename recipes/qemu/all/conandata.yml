@@ -1,0 +1,4 @@
+sources:
+  4.2.0-rc3:
+    sha256: 5d5aece78673c758f648b3ae06ea9758ffe0345b7db07d92f3e5ce9bdcd55ed8
+    url: https://download.qemu.org/qemu-4.2.0-rc3.tar.xz
