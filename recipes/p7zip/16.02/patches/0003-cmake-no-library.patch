@@ -1,0 +1,11 @@
+--- CPP/7zip/CMAKE/CMakeLists.txt
++++ CPP/7zip/CMAKE/CMakeLists.txt
+@@ -29,7 +29,7 @@
+ 
+ add_subdirectory(7zr)
+ 
+-add_subdirectory(Format7zFree  bin)
++#add_subdirectory(Format7zFree  bin)
+ 
+ find_package(wxWidgets COMPONENTS core base adv)
+ 

@@ -1,0 +1,12 @@
+sources:
+  "16.02":
+    url: http://downloads.sf.net/p7zip/p7zip_16.02_src_all.tar.bz2
+    sha256: "5eb20ac0e2944f6cb9c2d51dd6c4518941c185347d4089ea89087ffdd6e2341f"
+patches:
+  "16.02":
+    - patch_file: "patches/0001-no-runtime-output-directory.patch"
+      base_path: "source_subfolder"
+    - patch_file: "patches/0002-7z-target-output-name.patch"
+      base_path: "source_subfolder"
+    - patch_file: "patches/0003-cmake-no-library.patch"
+      base_path: "source_subfolder"

@@ -1,0 +1,10 @@
+--- CPP/7zip/CMAKE/7z_/CMakeLists.txt	2016-03-10 08:27:16.000000000 +0100
++++ CPP/7zip/CMAKE/7z_/CMakeLists.txt	2020-01-15 23:52:28.116833341 +0100
+@@ -96,6 +96,7 @@
+   "../../../../CPP/myWindows/wine_date_and_time.cpp"
+ )
+
++set_target_properties(7z_ PROPERTIES OUTPUT_NAME 7z)
+
+ find_library(DL_LIB dl)
+

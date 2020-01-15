@@ -1,0 +1,13 @@
+--- CPP/7zip/CMAKE/CMakeLists.txt
++++ CPP/7zip/CMAKE/CMakeLists.txt
+@@ -2,8 +2,8 @@
+
+ project(p7zip)
+
+-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin
+-    CACHE STRING "Where binaries and .dll files go" FORCE)
++#SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin
++#    CACHE STRING "Where binaries and .dll files go" FORCE)
+     
+
+ IF(HAVE_WCHAR_H)
