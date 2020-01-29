@@ -1,0 +1,14 @@
+sources:
+  "2.11.3":  # 2010-11-29
+    url: "https://ftp.gnu.org/gnu/glibc/glibc-2.11.3.tar.gz"
+    sha256: "ddc3210f4029991f5142fda7f269f9bfb197917e5d9445ba2d90d31f74cc2765"
+  "2.30":  # 2019-01-31
+    url: "https://ftp.gnu.org/gnu/glibc/glibc-2.30.tar.gz"
+    sha256: "decb0a29f1410735bed0e8e7247361da2bbf0dcfef7ac15bf26e7f910cb964c0"
+  "2.31":  # 2020-02-01
+    url: "https://ftp.gnu.org/gnu/glibc/glibc-2.31.tar.gz"
+    sha256: "cb2d64fb808affff30d8a99a85de9d2aa67dc2cbac4ae99af4500d6cfea2bda7"
+patches:
+  "2.11.3": []
+  "2.30": []
+  "2.31": []
