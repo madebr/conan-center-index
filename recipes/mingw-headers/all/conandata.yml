@@ -1,0 +1,4 @@
+sources:
+  "7.0.0":
+    url: "http://downloads.sourceforge.net/mingw-w64/mingw-w64-v7.0.0.tar.bz2"
+    sha256: ""
