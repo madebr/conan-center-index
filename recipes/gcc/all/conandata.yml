@@ -1,0 +1,4 @@
+sources:
+  "9.2.0":  # 2019-08-12
+    url: "https://ftp.gnu.org/gnu/gcc/gcc-9.2.0/gcc-9.2.0.tar.gz"
+    sha256: "a931a750d6feadacbeecb321d73925cd5ebb6dfa7eff0802984af3aef63759f4"
