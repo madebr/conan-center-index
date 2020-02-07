@@ -1,0 +1,15 @@
+This patch allows having a bdwgc requirement with debug disabled.
+
+--- libguile/gc.c
++++ libguile/gc.c
+@@ -205,7 +205,7 @@
+ 	    "structures and memory usage to the standard output.")
+ #define FUNC_NAME s_scm_gc_dump
+ {
++#if defined(GC_DEBUG)
+   GC_dump ();
++#endif
+-
+-  return SCM_UNSPECIFIED;
+-}
++  return SCM_UNSPECIFIED;}

@@ -1,0 +1,14 @@
+sources:
+  "3.0.4":
+    url: "https://ftp.gnu.org/gnu/guile/guile-3.0.4.tar.gz"
+    sha256: "13f2f61a665469d330e651c8e9f7faecbb87fe474767f9532f2e821701730957"
+  "2.2.7":
+    url: "https://ftp.gnu.org/gnu/guile/guile-2.2.7.tar.gz"
+    sha256: "44b4c5fbbe257ccdebea18420212c9b3e90c3c86a54920d8554039fc6769a007"
+patches:
+  "3.0.4":
+    - patch_file: "patches/3.0.4-0001-optional-GC_dump.patch"
+      base_path: "source_subfolder"
+  "2.2.7":
+    - patch_file: "patches/2.2.7-0001-optional-GC_dump.patch"
+      base_path: "source_subfolder"
