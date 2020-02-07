@@ -1,0 +1,8 @@
+autogen definitions list;
+group_name = example;
+list = { list_element = alpha; first;
+         list_info    = "some alpha stuff"; };
+list = { list_info    = "more beta stuff";
+         list_element = beta; };
+list = { list_element = omega; last;
+         list_info    = "final omega stuff"; };
