@@ -1,0 +1,4 @@
+sources:
+  "3.05":
+    url: "http://prdownloads.sourceforge.net/nsis/nsis-3.05-src.tar.bz2"
+    sha256: "b6e1b309ab907086c6797618ab2879cb95387ec144dab36656b0b5fb77e97ce9"

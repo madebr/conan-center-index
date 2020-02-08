@@ -1,0 +1,3 @@
+SConscript('source_subfolder/Sconstruct',
+            variant_dir = GetLaunchDir(),
+            duplicate = False)
