@@ -1,0 +1,40 @@
+--- src/CMakeLists.txt
++++ src/CMakeLists.txt
+@@ -20,7 +20,7 @@
+ # Targets
+ set(c_sources     ${CMAKE_CURRENT_SOURCE_DIR}/ftdi.c ${CMAKE_CURRENT_SOURCE_DIR}/ftdi_stream.c CACHE INTERNAL "List of c sources" )
+ set(c_headers     ${CMAKE_CURRENT_SOURCE_DIR}/ftdi.h CACHE INTERNAL "List of c headers" )
+-
++if(BUILD_SHARED_LIBS)
+ add_library(ftdi1 SHARED ${c_sources})
+ 
+ math(EXPR VERSION_FIXUP "${MAJOR_VERSION} + 1")    # Compatiblity with previous releases
+@@ -38,7 +38,7 @@
+           ARCHIVE DESTINATION lib${LIB_SUFFIX}
+         )
+ 
+-if ( STATICLIBS )
++else()
+   add_library(ftdi1-static STATIC ${c_sources})
+   target_link_libraries(ftdi1-static ${LIBUSB_LIBRARIES})
+   set_target_properties(ftdi1-static PROPERTIES OUTPUT_NAME "ftdi1")
+--- ftdipp/CMakeLists.txt
++++ ftdipp/CMakeLists.txt
+@@ -23,7 +23,7 @@
+     set(FTDI_BUILD_CPP True PARENT_SCOPE)
+     message(STATUS "Building libftdi1++")
+ 
+-    # Shared library
++    if(BUILD_SHARED_LIBS)
+     add_library(ftdipp1 SHARED ${cpp_sources})
+ 
+     math(EXPR VERSION_FIXUP "${MAJOR_VERSION} + 1")    # Compatiblity with previous releases
+@@ -43,7 +43,7 @@
+             )
+             
+     # Static library
+-    if ( STATICLIBS )
++    else()
+       add_library(ftdipp1-static STATIC ${cpp_sources})
+       set_target_properties(ftdipp1-static PROPERTIES OUTPUT_NAME "ftdipp1")
+       set_target_properties(ftdipp1-static PROPERTIES CLEAN_DIRECT_OUTPUT 1)
