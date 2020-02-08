@@ -1,0 +1,10 @@
+PC FILE EXAMPLE:
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+Name: libastral
+Description: Interface library for Astral data flows
+Version: 6.6.6
+Libs: -L${libdir}/libastral -lastral -Wl,--whole-archive
+Cflags: -I${includedir}/libastral -D_USE_LIBASTRAL
