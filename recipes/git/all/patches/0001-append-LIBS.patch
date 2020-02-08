@@ -1,0 +1,11 @@
+--- Makefile
++++ Makefile
+@@ -1986,7 +1986,7 @@
+ #
+ # where we use it as a dependency. Since we also pull object files
+ # from the dependency list, that would make each entry appear twice.
+-LIBS = $(filter-out %.o, $(GITLIBS)) $(EXTLIBS)
++LIBS += $(filter-out %.o, $(GITLIBS)) $(EXTLIBS)
+ 
+ BASIC_CFLAGS += $(COMPAT_CFLAGS)
+ LIB_OBJS += $(COMPAT_OBJS)
