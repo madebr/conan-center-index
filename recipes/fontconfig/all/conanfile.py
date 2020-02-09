@@ -1,10 +1,12 @@
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
+from conans.errors import ConanInvalidConfiguration
+from contextlib import contextmanager
 import os
 
 
 class FontconfigConan(ConanFile):
     name = "fontconfig"
-    license = ""
+    license = ("MIT", "Public Domain", "UCD")
     url = "https://github.com/conan-io/conan-center-index"
     homepage = "https://www.freedesktop.org/wiki/Software/fontconfig"
     description = "Fontconfig is a library for configuring and customizing font access"
@@ -42,6 +44,8 @@ class FontconfigConan(ConanFile):
         elif self.options.with_xml == "libxml2":
             self.requires("libxml2/2.9.9")
         self.requires("freetype/2.10.1")
+        if self.settings.compiler == "Visual Studio":
+            self.requires("dirent/1.23.2")
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -57,13 +61,23 @@ class FontconfigConan(ConanFile):
         tools.get(**self.conan_data["sources"][self.version])
         os.rename("fontconfig-{}".format(self.version), self._source_subfolder)
 
+    @contextmanager
+    def _build_context(self):
+        with tools.run_environment(self):
+            if self.settings.compiler == "Visual Studio":
+                with tools.vcvars(self.settings):
+                    with tools.environment_append({"CC": "cl -nologo", "CXX": "cl -nologo", "LD": "link"}):
+                        yield
+            else:
+                yield
+
     def _configure_autotools(self):
         if self._autotools:
             return self._autotools
         self._autotools = AutoToolsBuildEnvironment(self, win_bash=tools.os_info.is_windows)
         conf_args = [
-            "--sysconfdir={}".format(os.path.join(self.package_folder, "lib", "etc")),
-            "--datarootdir={}".format(os.path.join(self.package_folder, "lib", "share")),
+            "--sysconfdir={}".format(tools.unix_path(os.path.join(self.package_folder, "lib", "etc"))),
+            "--datarootdir={}".format(tools.unix_path(os.path.join(self.package_folder, "lib", "share"))),
             "--disable-docs",
         ]
         if self.options.with_xml == "libxml2":
@@ -72,25 +86,51 @@ class FontconfigConan(ConanFile):
             conf_args.extend(["--enable-shared", "--disable-static"])
         else:
             conf_args.extend(["--disable-shared", "--enable-static"])
-        self._autotools.configure(args=conf_args, configure_dir=self._source_subfolder)
+        vars = None
+        if self.settings.compiler == "Visual Studio":
+            vars = self._autotools.vars
+            # Use -L${path} instead of -LIBPATH:${path}
+            vars["LDFLAGS"] = vars["LDFLAGS"].replace("-LIBPATH:", "-L")
+            # Add libs as -l${liba} instead of ${liba}.lib
+            vars["LIBS"] = " ".join(list("-l{}".format(l.rsplit(".",1)[0]) for l in self._autotools.vars_dict["LIBS"]))
+        if self.settings.compiler == "gcc" and self.options.shared:
+            self._autotools.link_flags.append("-Wl,--whole-archive")
+        self._autotools.configure(args=conf_args, configure_dir=self._source_subfolder, vars=vars)
         return self._autotools
 
     def _patch_sources(self):
-        for patch_data in self.conan_data["patches"][self.version]:
-            tools.patch(**patch_data)
-
-    def build(self):
         tools.replace_in_file("freetype2.pc",
                               "\nVersion: ",
                               "\nVersion: {}\n#Version: ".format(self.deps_user_info["freetype"].LIBTOOL_VERSION))
-        autotools = self._configure_autotools()
-        autotools.make()
+        if self.settings.compiler == "Visual Studio":
+            with tools.chdir(os.path.join(self._source_subfolder, "src")):
+                for file in os.listdir("."):
+                    if file.endswith(".c") or file.endswith(".h"):
+                        tools.replace_in_file(file,
+                                              "#include <unistd.h>",
+                                              "#if defined(_MSC_VER)\n#include <io.h>\ntypedef long long ssize_t;\n#else\n#include <unistd.h>\n#endif",
+                                              strict=False)
+                        tools.replace_in_file(file,
+                                              "#include <sys/time.h>",
+                                              "#if defined(_MSC_VER)\n#include <io.h>\n#else\n#include <sys/time.h>\n#endif",
+                                              strict=False)
+
+    def build(self):
+        if self.settings.os == "Windows":
+            if self.options.with_xml == "expat":
+                if not self.options["expat"].shared:
+                    raise ConanInvalidConfiguration("expat must be a shared library")
+        self._patch_sources()
+        with self._build_context():
+            autotools = self._configure_autotools()
+            autotools.make()
 
     def package(self):
         self.copy("COPYING", src=self._source_subfolder, dst="licenses")
         os.chmod(os.path.join(self.package_folder, "licenses", "COPYING"), 0o644)
-        autotools = self._configure_autotools()
-        autotools.install()
+        with self._build_context():
+            autotools = self._configure_autotools()
+            autotools.install()
 
         os.unlink(os.path.join(self.package_folder, "lib", "libfontconfig.la"))
         tools.rmdir(os.path.join(self.package_folder, "lib", "pkgconfig"))
