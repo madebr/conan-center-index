@@ -1,0 +1,4 @@
+sources:
+  "1.2.0":
+    url: "https://github.com/NVIDIA/libglvnd/releases/download/v1.2.0/libglvnd-1.2.0.tar.gz"
+    sha256: "2dacbcfa47b7ffb722cbddc0a4f1bc3ecd71d2d7bb461bceb8e396dc6b81dc6d"
