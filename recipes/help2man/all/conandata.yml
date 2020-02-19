@@ -1,0 +1,4 @@
+sources:
+  "1.47.12":
+    url: "https://ftp.gnu.org/gnu/help2man/help2man-1.47.12.tar.xz"
+    sha256: "7d0ba64cf9d16ec97cc11aafb659b55aa7bdec99072ff2aec5fcecf0fbeab160"
