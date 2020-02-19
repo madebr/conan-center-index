@@ -1,0 +1,27 @@
+--- ct-ng.in
++++ ct-ng.in
+@@ -15,20 +15,10 @@
+ # and this is where we're working in:
+ export CT_TOP_DIR:=$(shell pwd)
+ 
+-ifeq (@enable_local@,yes)
+-# automake does not allow to set pkgxxxdir, they are always derived from
+-# a respective xxxdir. So, for enable-local case, set them directly here.
+-export CT_LIB_DIR:=$(patsubst %/,%,$(dir $(CT_NG)))
+-export CT_LIBEXEC_DIR:=$(CT_LIB_DIR)/kconfig
+-export CT_DOC_DIR:=$(CT_LIB_DIR)/docs
+-export CT_LICENSE_DIR
+-else
+-# Paths and values set by ./configure
+-# Don't bother to change it other than with a new ./configure!
+-export CT_LIB_DIR:=@pkgdatadir@
+-export CT_LIBEXEC_DIR:=@pkglibexecdir@
+-export CT_DOC_DIR:=@docdir@
+-endif
++CONAN_SCRIPT_DIR:=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
++export CT_LIB_DIR:=$(CONAN_SCRIPT_DIR)/share/crosstool-ng
++export CT_LIBEXEC_DIR:=$(CONAN_SCRIPT_DIR)/crosstool-ng
++export CT_DOC_DIR:=
+ 
+ # This is crosstool-NG version string
+ export CT_VERSION:=@PACKAGE_VERSION@
