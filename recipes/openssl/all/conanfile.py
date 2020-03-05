@@ -392,8 +392,8 @@ class OpenSSLConan(ConanFile):
     @property
     def _configure_args(self):
         openssldir = self.options.openssldir if self.options.openssldir else os.path.join(self.package_folder, "res")
-        prefix = tools.unix_path(self.package_folder) if self._win_bash else self.package_folder
-        openssldir = tools.unix_path(openssldir) if self._win_bash else openssldir
+        prefix = tools.unix_path(self.package_folder) if self._win_bash and self.settings.arch != "asm.js" else self.package_folder.replace("\\", "/")
+        openssldir = tools.unix_path(openssldir) if self._win_bash and self.settings.arch != "asm.js" else openssldir.replace("\\", "/")
         args = ['"%s"' % (self._target if self._full_version >= "1.1.0" else self._ancestor_target),
                 "shared" if self.options.shared else "no-shared",
                 "--prefix=%s" % prefix,
@@ -620,10 +620,10 @@ class OpenSSLConan(ConanFile):
     def _make_program(self):
         if self._use_nmake:
             return "nmake"
-        make_program = tools.get_env("CONAN_MAKE_PROGRAM", tools.which("make") or tools.which('mingw32-make'))
-        make_program = tools.unix_path(make_program) if tools.os_info.is_windows else make_program
+        make_program = tools.get_env("CONAN_MAKE_PROGRAM") or tools.which("make") or tools.which('mingw32-make')
         if not make_program:
             raise Exception('could not find "make" executable. please set "CONAN_MAKE_PROGRAM" environment variable')
+        make_program = make_program.replace("\\", "/")
         return make_program
 
     def _patch_install_name(self):
