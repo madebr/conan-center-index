@@ -12,7 +12,7 @@ class CPythonConan(ConanFile):
     topics = ("conan", "python", "cpython", "language", "script")
     license = ("Python-2.0",)
     exports_sources = "patches/**"
-    generators = "visual_studio"
+    generators = "msbuild"
     settings = "os", "arch", "compiler", "build_type"
     options = {
         "shared": [True, False],
@@ -239,6 +239,7 @@ class CPythonConan(ConanFile):
         if tools.Version(self.version) >= "3.8":
             archs.update({
                 "armv7": "ARM",
+                "armv8_32": "ARM",
                 "armv8": "ARM64",
             })
         return archs
@@ -255,7 +256,7 @@ class CPythonConan(ConanFile):
         for project in projects:
             project_file = os.path.join(self._source_subfolder, "PCBuild", project + ".vcxproj")
             msbuild.build(project_file, upgrade_project=not upgraded, build_type="Debug" if self.settings.build_type == "Debug" else "Release",
-                          arch=self._msvc_archs, properties=msbuild_properties)
+                          platforms=self._msvc_archs, properties=msbuild_properties)
             upgraded = True
 
     def build(self):
@@ -268,8 +269,17 @@ class CPythonConan(ConanFile):
 
     @property
     def _msvc_artifacts_path(self):
-        build_subdir = self._msvc_archs[str(self.settings.arch)]
-        return os.path.join(self._source_subfolder, "PCBuild", build_subdir)
+        build_subdir_lut = {
+            "x86_64": "amd64",
+            "x86": "win32",
+        }
+        if tools.Version(self.version) >= "3.8":
+            build_subdir_lut.update({
+                "armv7": "arm32",
+                "armv8_32": "arm32",
+                "armv8": "arm64",
+            })
+        return os.path.join(self._source_subfolder, "PCBuild", build_subdir_lut[str(self.settings.arch)])
 
     def _msvc_package_layout(self):
         build_path = self._msvc_artifacts_path
