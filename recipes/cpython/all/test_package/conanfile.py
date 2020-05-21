@@ -70,10 +70,11 @@ class TestPackageConan(ConanFile):
             self.run("{} -c \"print('hello world')\"".format(tools.get_env("PYTHON")), run_environment=True)
 
             buffer = StringIO()
-            self.run("{} -c \"import sys; print('.'.join(str(s) for s in sys.version_info[:3]))\"".format(tools.get_env("PYTHON")), run_environment=True, output=buffer)
-            version_detected = buffer.getvalue().splitlines()[-1].strip()
+            self.run("{} -c \"import sys; print(sys.version)\"".format(tools.get_env("PYTHON")), run_environment=True, output=buffer)
+            version_detected = buffer.getvalue().splitlines()[-2].split(" ", 1)[0]
+
             if version_detected != self.deps_cpp_info["cpython"].version:
-                raise ConanException("python reported wrong version. Expected {exp}. Got {res}.".format(exp=self._py_version, res=version_detected))
+                raise ConanException("python reported wrong version. Expected '{}'. Got '{}'.".format(self._py_version, version_detected))
 
             if self.options["cpython"].with_gdbm:
                 self._test_module("gdbm")
