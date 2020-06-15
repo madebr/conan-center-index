@@ -1,0 +1,219 @@
+new file mode 100755
+--- /dev/null
++++ msvc_compile.sh
+@@ -0,0 +1,68 @@
++#!/bin/sh
++clopts=()
++ldopts=()
++while test $# -gt 0; do
++    case "$1" in
++        -lm | -pthread | -lpthread)
++            # ignore
++            ;;
++        -Xlinker)
++            shift
++            ;;
++        -W* | -w*)
++            # ignore warnings
++            ;;
++        -D*)
++            clopts+=("$1")
++            ;;
++        -I*)
++            clopts+=("$1")
++            ;;
++        -l*)
++            ldopts+=("`echo "$1.lib" | sed "s/^-l//"`")
++            ;;
++        -LIBPATH*)
++            ldopts+=("$1")
++            ;;
++        -L*)
++            ldopts+=("`echo "$1" | sed "s/^-L/-LIBPATH:/"`")
++            ;;
++        -c)
++            shift
++            clopts+=(-c "$1")
++            ;;
++        -Wl,*)
++            for linkarg in `echo '$1' | sed -e 's/-Wl,//' -e 's/,/ /'`; do
++                ldopts+=("${linkarg}")
++            done
++            ;;
++        *.lib)
++            ldopts+=("$1")
++            ;;
++        -O3)
++            shift
++            ;;
++        -fPIC)
++            # Ignore fPIC
++            shift
++            ;;
++        -o)
++            shift
++            clopts+=("-Fo$1")
++            ;;
++        *)
++            clopts+=("$1")
++            ldopts+=("$1")
++            ;;
++    esac
++    shift
++done
++
++args="${clopts[@]}"
++
++cat <<-EOF
++    Creating program
++    ** cl options:   "$args"
++EOF
++
++exec cl -nologo $args
+new file mode 100755
+--- /dev/null
++++ msvc_lib.sh
+@@ -0,0 +1,65 @@
++#!/bin/sh
++aropts=()
++while test $# -gt 0; do
++    case "$1" in
++        -lm | -pthread | -lpthread | -lstdc++ | -lrt)
++            # ignore
++            ;;
++        -Xlinker)
++            shift
++            ;;
++        -W* | -w*)
++            # ignore warnings
++            ;;
++        -D*)
++            # ignore defines
++            ;;
++        -I*)
++            # ignore includes
++            ;;
++        -L* | -LIBPATH*)
++            # ignore dirs
++            ;;
++        -l* | *.lib)
++            # ignore libs
++            ;;
++        *.obj | *.o)
++            aropts+=("$1")
++            ;;
++        -Wl,*)
++            # ignore linker opts
++            ;;
++        *.lib)
++            ldopts+=("$1")
++            ;;
++        -o)
++            shift
++            case "$1" in
++                *.so | *.dll)
++                    libname_stem=`echo "$1" | sed -E "s/^lib//" | sed -E "s/.((so)|(dll))$//"`
++                    aropts+=("-out:$libname_stem.lib")
++                    ;;
++                *)
++                    aropts+=("-out:$1")
++                    ;;
++            esac
++            ;;
++        -shared)
++            ;;
++        -rdynamic)
++            ;;
++        *)
++            #ignore unknown
++            ;;
++    esac
++    shift
++done
++
++args="${aropts[@]}"
++
++cat <<-EOF
++    Creating program
++    ** ar options:   "$args"
++EOF
++
++exec lib -nologo $args
+new file mode 100755
+--- /dev/null
++++ msvc_link.sh
+@@ -0,0 +1,74 @@
++#!/bin/sh
++clopts=()
++ldopts=()
++while test $# -gt 0; do
++    case "$1" in
++        -lm | -pthread | -lpthread | -lstdc++ | -lrt)
++            # ignore
++            ;;
++        -Xlinker)
++            shift
++            ;;
++        -W* | -w*)
++            # ignore warnings
++            ;;
++        -D*)
++            clopts+=("$1")
++            ;;
++        -I*)
++            clopts+=("$1")
++            ;;
++        -l*)
++            ldopts+=("`echo "$1.lib" | sed "s/^-l//"`")
++            ;;
++        -LIBPATH*)
++            libpath="`echo "$1" | sed -E "s/^-LIBPATH:?//"`"
++            winlibpath="`cygpath -w "$libpath"`"
++            ldopts+=("-LIBPATH:$winlibpath")
++            ;;
++        -L*)
++            ldopts+=("`echo "$1" | sed "s/^-L/-LIBPATH:/"`")
++            ;;
++        *.obj | *.o)
++            ldopts+=("$1")
++            ;;
++        -Wl,*)
++            for linkarg in `echo '$1' | sed -e 's/-Wl,//' -e 's/,/ /'`; do
++                ldopts+=("${linkarg}")
++            done
++            ;;
++        *.lib)
++            ldopts+=("$1")
++            ;;
++        -o)
++            shift
++            case "$1" in
++                *.so | *.dll)
++                    libname_stem=`echo "$1" | sed -E "s/.((so)|(dll))$//"`
++                    ldopts+=(-dll "-out:$libname_stem.dll" "-implib:$libname_stem.lib")
++                    ;;
++                *)
++                    ldopts+=("-out:$1")
++                    ;;
++            esac
++            ;;
++        -shared)
++            ;;
++        -rdynamic)
++            ;;
++        *)
++            clopts+=("$1")
++            ldopts+=("$1")
++            ;;
++    esac
++    shift
++done
++
++args="${ldopts[@]}"
++
++cat <<-EOF
++    Creating program
++    ** ld options:   "$args"
++EOF
++
++exec link -nologo -debug:full $args

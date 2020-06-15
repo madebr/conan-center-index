@@ -1,0 +1,16 @@
+sources:
+  "cci.20200617":
+    url: "https://github.com/YosysHQ/yosys/archive/c4f20f744be57d4628400368d5fce040a9dbf269.zip"
+    sha256: "b4f7dfef66d22dba3158c911ec3a9fff87cd28c918bd6d06ed1f96a722e78ca6"
+patches:
+  "cci.20200617":
+    - patch_file: "patches/0001-add-msvc-wrapper-scripts.patch"
+      base_path: "source_subfolder"
+    - patch_file: "patches/0002-rename-TRANSPARENT-enum.patch"
+      base_path: "source_subfolder"
+    - patch_file: "patches/0003-msvc-cannot-omit-operand-in-conditional.patch"
+      base_path: "source_subfolder"
+    - patch_file: "patches/0004-msvc-does-not-understand-__builtin_unreachable.patch"
+      base_path: "source_subfolder"
+    - patch_file: "patches/0005-msvc-does-not-understand-designated-initializers.patch"
+      base_path: "source_subfolder"

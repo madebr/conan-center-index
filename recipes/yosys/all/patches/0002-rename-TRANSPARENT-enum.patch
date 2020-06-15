@@ -1,0 +1,16 @@
+--- kernel/yosys.h
++++ kernel/yosys.h
+@@ -117,11 +117,10 @@
+ #    define PATH_MAX MAX_PATH
+ #    define isatty _isatty
+ #    define fileno _fileno
+-#  else
+-//   mingw includes `wingdi.h` which defines a TRANSPARENT macro
++#  endif
++//   mingw and msvc include `wingdi.h` which defines a TRANSPARENT macro
+ //   that conflicts with X(TRANSPARENT) entry in kernel/constids.inc
+ #    undef TRANSPARENT
+-#  endif
+ #endif
+ 
+ #ifndef PATH_MAX

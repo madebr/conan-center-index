@@ -1,0 +1,19 @@
+--- passes/techmap/extract_counter.cc
++++ passes/techmap/extract_counter.cc
+@@ -795,11 +795,11 @@
+ 		pool<RTLIL::IdString> _parallel_cells;
+ 		CounterExtractionSettings settings
+ 		{
+-			.parallel_cells = _parallel_cells,
+-			.maxwidth = 64,
+-			.minwidth = 2,
+-			.allow_arst = true,
+-			.allowed_dirs = 0,
++			_parallel_cells,
++			64,
++			2,
++			true,
++			0,
+ 		};
+ 
+ 		size_t argidx;

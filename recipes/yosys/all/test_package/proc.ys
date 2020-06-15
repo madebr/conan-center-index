@@ -1,0 +1,5 @@
+verilog_defines -DSIMULATION
+read_verilog ./blinky.v
+hierarchy -check -top blinky
+write_ilang BlinkyTop.sim.ilang
+write_cxxrtl -header BlinkyTop.sim.cpp
