@@ -1,0 +1,4 @@
+sources:
+  "3.0.0":
+    url: "https://davidkebo.com/source/cudd_versions/cudd-3.0.0.tar.gz"
+    sha256: "b8e966b4562c96a03e7fbea239729587d7b395d53cadcc39a7203b49cf7eeb69"
