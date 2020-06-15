@@ -1,0 +1,10 @@
+.model DEMO
+.outputs O_AND O_NAND O_OR
+.inputs I_1 I_2
+.names I_1 I_2 O_AND
+11 1
+.names I_1 I_2 O_NAND
+11 0
+.names I_1 I_2 O_OR
+00 0
+.end

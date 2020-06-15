@@ -1,0 +1,99 @@
+--- src/aig/gia/giaKf.c
++++ src/aig/gia/giaKf.c
+@@ -24,7 +24,7 @@
+ #ifdef ABC_USE_PTHREADS
+ 
+ #ifdef _WIN32
+-#include "../lib/pthread.h"
++#include <pthread.h>
+ #else
+ #include <pthread.h>
+ #include <unistd.h>
+--- src/base/cmd/cmdAuto.c
++++ src/base/cmd/cmdAuto.c
+@@ -30,7 +30,7 @@
+ #ifdef ABC_USE_PTHREADS
+ 
+ #ifdef _WIN32
+-#include "../lib/pthread.h"
++#include <pthread.h>
+ #else
+ #include <pthread.h>
+ #include <unistd.h>
+--- src/base/cmd/cmdStarter.c
++++ src/base/cmd/cmdStarter.c
+@@ -28,7 +28,7 @@
+ #ifdef ABC_USE_PTHREADS
+ 
+ #ifdef _WIN32
+-#include "../lib/pthread.h"
++#include <pthread.h>
+ #else
+ #include <pthread.h>
+ #include <unistd.h>
+--- src/base/wlc/wlcPth.c
++++ src/base/wlc/wlcPth.c
+@@ -24,7 +24,7 @@
+ #ifdef ABC_USE_PTHREADS
+ 
+ #ifdef _WIN32
+-#include "../lib/pthread.h"
++#include <pthread.h>
+ #else
+ #include <pthread.h>
+ #include <unistd.h>
+--- src/map/if/ifDsd.c
++++ src/map/if/ifDsd.c
+@@ -33,7 +33,7 @@
+ #ifdef ABC_USE_PTHREADS
+ 
+ #ifdef _WIN32
+-#include "../lib/pthread.h"
++#include <pthread.h>
+ #else
+ #include <pthread.h>
+ #include <unistd.h>
+--- src/map/if/ifTest.c
++++ src/map/if/ifTest.c
+@@ -24,7 +24,7 @@
+ #ifdef ABC_USE_PTHREADS
+ 
+ #ifdef _WIN32
+-#include "../lib/pthread.h"
++#include <pthread.h>
+ #else
+ #include <pthread.h>
+ #include <unistd.h>
+--- src/proof/abs/absPth.c
++++ src/proof/abs/absPth.c
+@@ -26,7 +26,7 @@
+ #ifdef ABC_USE_PTHREADS
+ 
+ #ifdef _WIN32
+-#include "../lib/pthread.h"
++#include <pthread.h>
+ #else
+ #include <pthread.h>
+ #include <unistd.h>
+--- src/proof/cec/cecSplit.c
++++ src/proof/cec/cecSplit.c
+@@ -29,7 +29,7 @@
+ #ifdef ABC_USE_PTHREADS
+ 
+ #ifdef _WIN32
+-#include "../lib/pthread.h"
++#include <pthread.h>
+ #else
+ #include <pthread.h>
+ #include <unistd.h>
+--- src/sat/bmc/bmcBmcS.c
++++ src/sat/bmc/bmcBmcS.c
+@@ -49,7 +49,7 @@
+ #ifdef ABC_USE_PTHREADS
+ 
+ #ifdef _WIN32
+-    #include "../lib/pthread.h"
++    #include <pthread.h>
+ #else
+     #include <pthread.h>
+     #include <unistd.h>

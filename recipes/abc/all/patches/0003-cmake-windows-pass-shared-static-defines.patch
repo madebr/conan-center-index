@@ -1,0 +1,11 @@
+--- CMakeLists.txt
++++ CMakeLists.txt
+@@ -105,1 +105,8 @@
+ set_property(TARGET libabc-pic PROPERTY OUTPUT_NAME abc-pic)
++if(WIN32)
++    if(BUILD_SHARED_LIBS)
++        target_compile_definitions(libabc PRIVATE "ABC_DLL=__declspec(dllexport)")
++    else()
++        target_compile_definitions(libabc PUBLIC WIN32_NO_DLL)
++    endif()
++endif()

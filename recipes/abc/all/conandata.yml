@@ -1,0 +1,18 @@
+sources:
+  "cci.20200605":
+    url: "https://github.com/berkeley-abc/abc/archive/58e3a5caff7033200fce5136dd7e02eee87c4e8a.zip"
+    sha256: "f02157ea543e6836c0670d4981436001a6268a897a66d17d1f912f892bb66233"
+patches:
+  "cci.20200605":
+    - patch_file: "patches/0001-cmake-pass-make-flags-install.patch"
+      base_path: "source_subfolder"
+    - patch_file: "patches/0002-do-not-use-embedded-pthread-library.patch"
+      base_path: "source_subfolder"
+    - patch_file: "patches/0003-cmake-windows-pass-shared-static-defines.patch"
+      base_path: "source_subfolder"
+    - patch_file: "patches/0004-windows-remove-non-existing-system-libraries.patch"
+      base_path: "source_subfolder"
+    - patch_file: "patches/0005-export-Abc_RealMain.patch"
+      base_path: "source_subfolder"
+    - patch_file: "patches/0006-msvc-dont-define-inline.patch"
+      base_path: "source_subfolder"

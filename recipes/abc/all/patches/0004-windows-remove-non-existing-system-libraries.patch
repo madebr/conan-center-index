@@ -1,0 +1,16 @@
+--- CMakeLists.txt
++++ CMakeLists.txt
+@@ -77,7 +77,12 @@
+ extract_var(SEPARATOR_LIBS ABC_LIBS ${MAKE_OUTPUT})
+ extract_var(SEPARATOR_CFLAGS ABC_CFLAGS ${MAKE_OUTPUT})
+ extract_var(SEPARATOR_CXXFLAGS ABC_CXXFLAGS ${MAKE_OUTPUT})
+-
++if(WIN32)
++  list(REMOVE_ITEM ABC_LIBS -ldl -lrt)
++  if(MSVC)
++    list(REMOVE_ITEM ABC_LIBS -lm)
++  endif()
++endif()
+ if(ABC_USE_NAMESPACE)
+     set_source_files_properties(${ABC_SRC} PROPERTIES LANGUAGE CXX)
+ endif()
