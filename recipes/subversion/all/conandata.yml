@@ -1,0 +1,4 @@
+sources:
+  "1.14.0":
+    url: "https://downloads.apache.org/subversion/subversion-1.14.0.tar.gz"
+    sha256: "ef3d1147535e41874c304fb5b9ea32745fbf5d7faecf2ce21d4115b567e937d0"
