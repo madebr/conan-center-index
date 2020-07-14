@@ -1,0 +1,8 @@
+sources:
+  "cci.20150908":
+    url: "https://github.com/stepcode/baffledCitrus/archive/07421beb3b859db53669e8d0208ce27f81ecaec0.zip"
+    sha256: "5b04c91a21bb3d165826f7a11bd0ed0deaedb3e6017e5298d6804193eb7b1581"
+patches:
+  "cci.20150908":
+    - patch_file: "patches/0001-open-template-file-from-current-directory-by-default.patch"
+      base_path: "source_subfolder/perplex"
