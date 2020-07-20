@@ -1,7 +1,9 @@
 from conans import ConanFile, CMake, tools
 
+
 class TestPackageConan(ConanFile):
-    generators = "cmake_paths"
+    generators = "cmake"
+
     def build(self):
         cmake = CMake(self)
         cmake.configure()
@@ -9,5 +11,4 @@ class TestPackageConan(ConanFile):
 
     def test(self):
         if not tools.cross_building(self.settings):
-            self.output.info("Version:")
             self.run("doxygen --version", run_environment=True)
