@@ -1,0 +1,32 @@
+--- cmd/dot/Makefile.am
++++ cmd/dot/Makefile.am
+@@ -58,7 +58,7 @@ install-data-hook:
+ # run "dot -c", if possible, to create plugin config
+ install-exec-hook:
+ 	(cd $(DESTDIR)$(bindir); if test -x dot$(EXEEXT); then for i in $(linkedprogram); do rm -f $$i; $(LN_S) dot$(EXEEXT) $$i; done; fi;)
+-	if test "x$(DESTDIR)" = "x"; then if test -x $(bindir)/dot$(EXEEXT); then if test -x /sbin/ldconfig; then /sbin/ldconfig 2>/dev/null; fi; $(bindir)/dot$(EXEEXT) -c; else $(bindir)/dot_static$(EXEEXT) -c; fi; fi
++	if test "x$(DESTDIR)" = "x"; then if test -x $(bindir)/dot$(EXEEXT); then if test -x /sbin/ldconfig; then /sbin/ldconfig 2>/dev/null; fi; $(bindir)/dot$(EXEEXT) -c; elif test -x $(bindir)/dot_static$(EXEEXT); then $(bindir)/dot_static$(EXEEXT) -c; else $(bindir)/dot_builtins$(EXEEXT) -c; fi; fi
+ 
+ uninstall-hook:
+ 	(cd $(DESTDIR)$(man1dir); for i in $(linkedman); do rm -f $$i; done;)
+--- cmd/edgepaint/Makefile.am
++++ cmd/edgepaint/Makefile.am
+@@ -23,7 +23,6 @@ edgepaint_CPPFLAGS = $(AM_CPPFLAGS)
+ edgepaint_LDADD = \
+     $(top_builddir)/lib/edgepaint/libedgepaint_C.la \
+     $(top_builddir)/lib/ingraphs/libingraphs_C.la \
+-	$(top_builddir)/lib/sfdpgen/libsfdpgen_C.la \
+ 	$(top_builddir)/lib/neatogen/libneatogen_C.la \
+ 	$(top_builddir)/lib/sparse/libsparse_C.la \
+ 	$(top_builddir)/lib/rbtree/librbtree_C.la \
+@@ -33,6 +32,10 @@ edgepaint_LDADD = \
+ 	$(top_builddir)/lib/cdt/libcdt.la \
+ 	$(ANN_LIBS) -lstdc++ -lm
+ 
++if WITH_SFDP
++	edgepaint_LDADD += $(top_builddir)/lib/sfdpgen/libsfdpgen_C.la
++endif
++
+ edgepaint.1.pdf: edgepaint.1.ps
+ 	@PS2PDF@ $< $@
+ 
