@@ -9,18 +9,14 @@ class GccConan(ConanFile):
     url = "https://github.com/conan-io/conan-center-index/"
     homepage = "https://gcc.gnu.org"
     topics = ("conan", "gcc", "gnu", "compiler")
-    settings = "os_build", "arch_build", "compiler"
+    settings = "os", "arch", "compiler", "build_type", "os_target", "arch_target"
 
     no_copy_source = True
 
     options = {
-        "arch_target": "ANY",
-        "os_target": "ANY",
     }
 
     default_options = {
-        "arch_target": None,
-        "os_target": None,
     }
 
     _autotools = None
@@ -31,7 +27,7 @@ class GccConan(ConanFile):
 
     @property
     def _arch_target(self):
-        return str(self.options.arch_target or self.settings.arch_build)
+        return str(self.settings.arch_target)
 
     _triplet_arch_lut = {
         "x86": "i686",
@@ -44,7 +40,7 @@ class GccConan(ConanFile):
 
     @property
     def _os_target(self):
-        return str(self.options.os_target or self.settings.os_build)
+        return str(self.settings.os_target)
 
     _triplet_os_lut = {
         "MacOS": "darwin",
@@ -67,15 +63,28 @@ class GccConan(ConanFile):
     def _triplet_target(self):
         return "{}-{}-{}".format(self._triplet_arch_target, self._triplet_vendor_target, self._triplet_os_target)
 
-    # def build_requirements(self):
-    #     if tools.os_info.is_windows and not "CONAN_BASH_PATH" in os.environ \
-    #             and not tools.os_info.detect_windows_subsystem() != "msys2":
-    #         self.build_requires("msys2/20190524")
-    #     self.build_requires("gmp/6.1.2")
-    #     self.build_requires("mpfr/4.0.2")
-    #     self.build_requires("zlib/1.2.11")
-    #     # self.build_requirements("bison/???")
-    #     # self.build_requirements("flex/???")
+    def config_options(self):
+        if str(self.settings.arch_target) == str(None):
+            self.settings.arch_target = self.settings.arch
+        if str(self.settings.os_target) == str(None):
+            self.settings.os_target = self.settings.os
+
+    def requirements(self):
+        # if tools.os_info.is_windows and not "CONAN_BASH_PATH" in os.environ \
+        #         and not tools.os_info.detect_windows_subsystem() != "msys2":
+        #     self.build_requires("msys2/20190524")
+        self.requires("gmp/6.2.0")
+        self.requires("mpfr/4.1.0")
+        self.requires("zlib/1.2.11")
+        self.requires("mpc/1.1.0")
+        # if self.settings.os_target == "Windows":
+        #     self.requires("mingw-w64/7.0.0")
+
+    def build_requirements(self):
+        self.build_requires("binutils/")
+        # self.build_requires("bison/???")
+        # self.build_requires("flex/???")
+        pass
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
@@ -89,27 +98,32 @@ class GccConan(ConanFile):
         if self._autotools:
             return self._autotools
         self._autotools = AutoToolsBuildEnvironment(self)
+        self._autotools.include_paths = []
+        self._autotools.libs = []
         yes_no = lambda tf : "yes" if tf else "no"
         conf_args = [
-            "--target={}".format(self._triplet_target),
-            "--enable-gold={}".format(yes_no(self.options.with_gold)),
-            "--enable-ld={}".format(yes_no(self.options.with_ld)),
-            "--disable-multilib",
+            "--target={}".format(tools.get_gnu_triplet(os_=str(self.settings.os_target), arch=str(self.settings.arch_target), compiler="gcc")),
+            "--disable-nls",
+            "--enable-languages=c,c++",  # all, default, ada, c, c++, d, fortran, go, jit, lto, objc, obj-c++
+            # "--disable-boostrap",
             "--with-system-zlib",
+            "--disable-win32-registry",
+            "--with-mpc={}".format(self.deps_cpp_info["mpc"].rootpath),
             "--with-mpfr={}".format(self.deps_cpp_info["mpfr"].rootpath),
             "--with-gmp={}".format(self.deps_cpp_info["gmp"].rootpath),
             "--disable-nls",
             "exec_prefix={}".format(self._exec_prefix),
         ]
-        self._autotools.configure(args=conf_args, configure_dir=self._source_subfolder)
+        self._autotools.configure(args=conf_args, configure_dir=os.path.join(self.source_folder, self._source_subfolder))
         return self._autotools
 
     def build(self):
         autotools = self._configure_autotools()
-        autotools.make()
+        with tools.environment_append({"BOOT_CFLAGS": "-G"}):
+            autotools.make()
 
     def package(self):
-        self.copy("COPYTING*", src=self._source_subfolder, dst="licenses")
+        self.copy("COPYING*", src=self._source_subfolder, dst="licenses")
         autotools = self._configure_autotools()
         autotools.install()
 
@@ -124,6 +138,5 @@ class GccConan(ConanFile):
         self.output.info("Appending PATH environment variable: {}".format(bindir))
         self.env_info.PATH.append(bindir)
 
-        target_bindir = os.path.join(self._exec_prefix, self._triplet_target, "bin")
-        self.output.info("Appending PATH environment variable: {}".format(target_bindir))
-        self.env_info.PATH.append(target_bindir)
+        # Don't add sysroot/bin to PATH to avoid possible conflict between different binutils when cross building
+        self.user_info.SYSROOT = os.path.join(self._exec_prefix, self._triplet_target)
