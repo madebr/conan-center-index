@@ -1,0 +1,10 @@
+project(test_package_c)  {
+  Source_Files {
+    test_package_c.c
+  }
+}
+project(test_package_cpp) {
+  Source_Files {
+    test_package_cpp.cpp
+  }
+}

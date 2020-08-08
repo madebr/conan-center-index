@@ -34,4 +34,12 @@ class MPCGeneratorConan(ConanFile):
         bin_path = os.path.join(self.package_folder, "bin")
         self.output.info('Appending PATH environment variable: %s' % bin_path)
         self.env_info.PATH.append(bin_path)
-        self.env_info.MPC_ROOT = bin_path
+
+        mpc_root = bin_path.replace("\\", "/")
+        self.output.info("Setting MPC_ROOT environment variable: {}".format(mpc_root))
+        self.env_info.MPC_ROOT = mpc_root
+
+        self.user_info.MPC = os.path.join(mpc_root, "mpc.pl").replace("\\", "/")
+        self.user_info.MWC = os.path.join(mpc_root, "mwc.pl").replace("\\", "/")
+
+

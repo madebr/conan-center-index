@@ -2,3 +2,6 @@ sources:
   "4.1.46":
     url: "https://github.com/objectcomputing/MPC/archive/MPC_4_1_46.tar.gz"
     sha256: "7fa43cfe81a5fffdd2e958091661efef08ddcf011f9ef8090e8283d04dd88043"
+  "cci.20200807":
+    url: "https://github.com/DOCGroup/MPC/archive/edd85414def6470647fae22899b2d07df5be7f3a.tar.gz"
+    sha256: "08c9baf05721eea73f7591bd755ac9cbde232c82955613085d9268c113c1340f"
