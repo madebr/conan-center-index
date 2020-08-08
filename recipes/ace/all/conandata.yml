@@ -1,0 +1,4 @@
+sources:
+  "6.5.10":
+    url: "https://github.com/DOCGroup/ACE_TAO/releases/download/ACE%2BTAO-6_5_10/ACE-src-6.5.10.tar.gz"
+    sha256: "b7d8916db37b5e5f3a3631483103f60ac75e1c658cfd9791192bfc9dd37ff6c4"
