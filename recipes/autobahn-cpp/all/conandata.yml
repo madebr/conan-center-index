@@ -1,0 +1,4 @@
+sources:
+  "18.4.1":
+    url: "https://github.com/crossbario/autobahn-cpp/archive/v18.4.1.tar.gz"
+    sha256: "3238fe3981a4f73cb3091076444292ad5ae37f2996fbb7bc4a2b71eb813364d5"
