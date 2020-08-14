@@ -1,0 +1,8 @@
+sources:
+  "1.19.2":
+    url: "https://gitlab.freedesktop.org/xorg/util/macros/-/archive/771b773b50717884b37f6b2473166b4be4670076/macros-771b773b50717884b37f6b2473166b4be4670076.tar.gz"
+    sha256: "661f7c8330e9f2c422632392a172a1424553ce024f4fb112c4268e2e657a9c94"
+patches:
+  "1.19.2":
+    - patch_file: "patches/0001-export-XORG_MACROS_VERSION-macro.patch"
+      base_path: "source_subfolder"
