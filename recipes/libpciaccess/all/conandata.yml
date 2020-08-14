@@ -1,0 +1,4 @@
+sources:
+  "0.15":
+    url: "https://gitlab.freedesktop.org/xorg/lib/libpciaccess/-/archive/726e27bedf163597b5c948b66daeacf9b76f441a/libpciaccess-726e27bedf163597b5c948b66daeacf9b76f441a.tar.gz"
+    sha256: "2b36c732d6cab5c365f4f559ff95f6ea66de8faba8574fb0cb7b02ed367d2c13"
