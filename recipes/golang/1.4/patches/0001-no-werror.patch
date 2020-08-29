@@ -1,0 +1,23 @@
+--- src/make.bash
++++ src/make.bash
+@@ -129,7 +129,7 @@
+ if [ -z "$CC" -a -z "$(type -t gcc)" -a -n "$(type -t clang)" ]; then
+ 	export CC=clang CXX=clang++
+ fi
+-${CC:-gcc} $mflag -O2 -Wall -Werror -o cmd/dist/dist -Icmd/dist "$DEFGOROOT" cmd/dist/*.c
++${CC:-gcc} $mflag -O2 -Wall -o cmd/dist/dist -Icmd/dist "$DEFGOROOT" cmd/dist/*.c
+ 
+ # -e doesn't propagate out of eval, so check success by hand.
+ eval $(./cmd/dist/dist env -p || echo FAIL=true)
+
+--- src/make.bat
++++ src/make.bat
+@@ -60,7 +60,7 @@
+ echo cmd/dist
+ if not exist ..\bin\tool mkdir ..\bin\tool
+ :: Windows has no glob expansion, so spell out cmd/dist/*.c.
+-gcc -O2 -Wall -Werror -o cmd/dist/dist.exe -Icmd/dist %DEFGOROOT% cmd/dist/buf.c cmd/dist/build.c cmd/dist/buildgc.c cmd/dist/buildgo.c cmd/dist/buildruntime.c cmd/dist/main.c cmd/dist/windows.c cmd/dist/arm.c
++gcc -O2 -Wall -o cmd/dist/dist.exe -Icmd/dist %DEFGOROOT% cmd/dist/buf.c cmd/dist/build.c cmd/dist/buildgc.c cmd/dist/buildgo.c cmd/dist/buildruntime.c cmd/dist/main.c cmd/dist/windows.c cmd/dist/arm.c
+ if errorlevel 1 goto fail
+ .\cmd\dist\dist env -wp >env.bat
+ if errorlevel 1 goto fail

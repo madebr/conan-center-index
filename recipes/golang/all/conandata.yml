@@ -1,0 +1,4 @@
+sources:
+  "1.15":
+    url: "https://golang.org/dl/go1.15.src.tar.gz"
+    sha256: "69438f7ed4f532154ffaf878f3dfd83747e7a00b70b3556eddabf7aaee28ac3a"

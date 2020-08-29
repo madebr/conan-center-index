@@ -1,0 +1,25 @@
+--- src/race.bash
++++ src/race.bash
+@@ -49,5 +49,5 @@
+ # at least runtime/debug test will fail.
+ unset GOROOT_FINAL
+ 
+-go test -race -short std
+-go test -race -run=nothingplease -bench=.* -benchtime=.1s -cpu=4 std
++#go test -race -short std
++#go test -race -run=nothingplease -bench=.* -benchtime=.1s -cpu=4 std
+--- src/race.bat
++++ src/race.bat
+@@ -43,10 +43,10 @@
+ set GOROOT_FINAL=
+ 
+ echo # go test -race -short std
+-go test -race -short std
++:: go test -race -short std
+ if errorlevel 1 goto fail
+ echo # go test -race -run=nothingplease -bench=.* -benchtime=.1s -cpu=4 std
+-go test -race -run=nothingplease -bench=.* -benchtime=.1s -cpu=4 std
++:: go test -race -run=nothingplease -bench=.* -benchtime=.1s -cpu=4 std
+ if errorlevel 1 goto fail
+ goto succ
+ 
