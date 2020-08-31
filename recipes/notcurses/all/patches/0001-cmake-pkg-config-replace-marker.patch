@@ -1,0 +1,5 @@
+--- CMakeLists.txt
++++ CMakeLists.txt
+@@ -76,1 +76,1 @@
+-pkg_search_module(TERMINFO REQUIRED tinfo>=6.1 ncursesw>=6.1)
++pkg_search_module(TERMINFO REQUIRED TINFONAME NCURSESNAME)#TINFONAME>=6.1 NCURSESNAME>=6.1)
