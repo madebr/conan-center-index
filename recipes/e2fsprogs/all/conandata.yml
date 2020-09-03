@@ -1,0 +1,8 @@
+sources:
+  "1.45.6":
+    url: "https://mirrors.edge.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs/v1.45.6/e2fsprogs-1.45.6.tar.gz"
+    sha256: "2230b0469b7c0e9170ec7591728aa40caae62330543633be0960ac49d5bce310"
+patches:
+  "1.45.6":
+    - patch_file: "patches/0001-relocatable-scripts.sh"
+      base_path: "source_subfolder"

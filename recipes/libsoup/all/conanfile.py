@@ -1,0 +1,80 @@
+from conans import ConanFile, Meson, tools
+import os
+
+
+class LibSoupConan(ConanFile):
+    name = "libsoup"
+    description = "libsoup is an HTTP client/server library for GNOME."
+    homepage = "https://gitlab.gnome.org/GNOME/libsoup"
+    topics = ("conan", "http", "client", "server", "gnome", "gobject", "glib")
+    license = "GPL-2.0-or-later"
+    url = "https://github.com/conan-io/conan-center-index"
+    options = {
+        "shared": [True, False],
+        "fPIC": [True, False],
+        "with_brotli": [True, False],
+    }
+    default_options = {
+        "shared": False,
+        "fPIC": True,
+        "with_brotli": True,
+    }
+    settings = "os", "arch", "compiler", "build_type"
+    generators = "pkg_config"
+
+    _meson = None
+
+    @property
+    def _source_subfolder(self):
+        return "source_subfolder"
+
+    @property
+    def _build_subfolder(self):
+        return "build_subfolder"
+
+    def config_options(self):
+        if self.settings.os == "Windows":
+            del self.options.fPIC
+
+    def configure(self):
+        if self.options.shared:
+            del self.options.fPIC
+
+    def build_requirements(self):
+        self.build_requires("meson/0.55.0")
+
+    def requirements(self):
+        self.requires("sqlite3/3.32.3")
+        self.requires("libxml2/2.9.10")
+        self.requires("libpsl/0.21.1")
+        self.requires("zlib/1.2.11:q")
+        if self.options.with_brotli:
+            self.requires("brotli/1.0.7")
+
+    def source(self):
+        tools.get(**self.conan_data["sources"][self.version])
+        os.rename("libsoup-{}".format(self.version), self._source_subfolder)
+
+    def _configure_meson(self):
+        if self._meson:
+            return self._meson
+        enabled_disabled = lambda v: "enabled" if v else "disabled"
+        self._meson = Meson(self)
+        self._meson.options["brotli"] = enabled_disabled(self.options.with_brotli)
+        self._meson.options["gnome"] = enabled_disabled(False)
+        self._meson.options["introspection"] = enabled_disabled(False)  # FIXME: requires gobject-introspection
+        self._meson.options["vapi"] = enabled_disabled(False)
+        self._meson.configure(source_folder=self._source_subfolder, build_folder=self._build_subfolder)
+        return self._meson
+
+    def build(self):
+        meson = self._configure_meson()
+        meson.build()
+
+    def install(self):
+        self.copy("COPYING", src=self._source_subfolder, dst="licenses")
+        meson = self._configure_meson()
+        meson.build()
+
+    def package_info(self):
+        self.cpp_info.libs = ["soup"]

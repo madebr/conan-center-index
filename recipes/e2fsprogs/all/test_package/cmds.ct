@@ -1,0 +1,15 @@
+command_table test_package_commands;
+
+#
+# test_package commands
+#
+request do_hello_world, "Print hello world",
+	hello, world;
+
+request do_work, "Do some heavy work",
+	work;
+
+request do_clean, "Clean myself up",
+	clean;
+
+end;
