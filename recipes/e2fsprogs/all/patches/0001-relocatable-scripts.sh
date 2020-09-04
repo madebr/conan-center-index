@@ -5,7 +5,7 @@
 
  AWK=@AWK@
 -DIR=@datadir@/et
-+DIR="#E2FSPROGS_CONAN_DATADIR/et"
++DIR="$E2FSPROGS_CONAN_DATADIR/et"
 
  if test "$1" = "--build-tree" ; then
      shift;

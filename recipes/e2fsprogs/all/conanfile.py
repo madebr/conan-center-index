@@ -92,7 +92,7 @@ class E2fsProgsConan(ConanFile):
         self.cpp_info.components["com_err"].libs = ["com_err"]
         self.cpp_info.components["com_err"].names["pkg_config"] = "com_err"
         if self.settings.os == "Linux":
-            self.cpp_info.components["com_err"].system_libs = ["pthread"]
+            self.cpp_info.components["com_err"].system_libs = ["pthread", "rt"]
 
         self.cpp_info.components["e2p"].libs = ["e2p"]
         self.cpp_info.components["e2p"].names["pkg_config"] = "e2p"
@@ -106,6 +106,10 @@ class E2fsProgsConan(ConanFile):
         self.cpp_info.components["ss"].requires = ["com_err"]
         if self.settings.os == "Linux":
             self.cpp_info.components["ss"].system_libs = ["dl"]
+
+        bin_path = os.path.join(self.package_folder, "bin").replace("\\", "/")
+        self.output.info("Appending PATH environment variable: {}".format(bin_path))
+        self.env_info.PATH.append(bin_path)
 
         datadir = self._datarootdir
         self.env_info.E2FSPROGS_CONAN_DATADIR = datadir
