@@ -1,0 +1,11 @@
+--- configure.ac
++++ configure.ac
+@@ -86,6 +86,8 @@ AC_ARG_WITH([tevent],
+             [case $withval in
+                  no) WITH_TEVENT=no;;
+                 yes) WITH_TEVENT=yes;;
++            default) WITH_TEVENT=default;;
++            builtin) WITH_TEVENT=builtin;;
+                   *) WITH_TEVENT=auto;;
+              esac], [WITH_TEVENT=auto])
+ 

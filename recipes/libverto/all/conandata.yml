@@ -2,3 +2,7 @@ sources:
   "0.3.1":
     url: "https://github.com/latchset/libverto/releases/download/0.3.1/libverto-0.3.1.tar.gz"
     sha256: "983817c6bc0af6fa3731da2653e6371f6e1a56b4489ee44b3172e918574c50ea"
+patches:
+  "0.3.1":
+    - patch_file: "patches/0001-allow-tevent-builtin-backend.patch"
+      base_path: "source_subfolder"

@@ -39,16 +39,16 @@ int main(int argc, char *argv[])
     struct timeout_info *tinfo = (struct timeout_info*) malloc(sizeof(struct timeout_info));
     tinfo->count = 0;
     ev = verto_add_timeout(ctx, VERTO_EV_FLAG_NONE, on_timeout, 50);
-    verto_set_private(ev, tinfo, NULL);
     if (ev == NULL) {
         fprintf(stderr, "verto_add_timeout failed\n");
         return 1;
     }
+    verto_set_private(ev, tinfo, NULL);
 
     verto_run(ctx);
     free(tinfo);
 
     verto_free(ctx);
-    verto_cleanup();
+    verto_cleanup();  // <= munmap_chunk(): invalid pointer here
     return 0;
 }
