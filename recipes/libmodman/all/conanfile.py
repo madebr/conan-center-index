@@ -72,9 +72,6 @@ class LibModManConan(ConanFile):
         cmake.install()
 
         tools.rmdir(os.path.join(self.package_folder, "lib", "pkgconfig"))
-        # tools.rmdir(os.path.join(self.package_folder, "lib", "perl"))
-        # tools.rmdir(os.path.join(self.package_folder, "lib", "python2"))
-        # tools.rmdir(os.path.join(self.package_folder, "lib", "python3"))
         tools.rmdir(os.path.join(self.package_folder, "share"))
 
     def package_info(self):
@@ -83,4 +80,4 @@ class LibModManConan(ConanFile):
             self.cpp_info.system_libs = ["dl", "m"]
 
         self.cpp_info.names["pkg_config"] = "libmodman-2.0"
-        self.cpp_info.names["cmake_find_package"] = "libmodman"
+        self.cpp_info.names["cmake_find_package"] = "libmodman"  # FIXME: generates `libmodman` target (not `libmodman::libmodman`)
