@@ -1,0 +1,31 @@
+--- meson.build
++++ meson.build
+@@ -57,12 +57,15 @@
+ gmodule_dep = dependency('gmodule-2.0',
+   fallback: ['glib', 'libgmodule_dep'])
+ 
+-if glib_dep.type_name() == 'internal'
+-  glib_proj = subproject('glib')
+-  gio_module_dir = glib_proj.get_variable('glib_giomodulesdir')
+-else
+-  gio_module_dir = gio_dep.get_pkgconfig_variable('giomoduledir',
+-                                                  define_variable: ['libdir', join_paths(prefix, libdir)])
++gio_module_dir = get_option('gio_module_dir')
++if gio_module_dir == ''
++  if glib_dep.type_name() == 'internal'
++    glib_proj = subproject('glib')
++    gio_module_dir = glib_proj.get_variable('glib_giomodulesdir')
++  else
++    gio_module_dir = gio_dep.get_pkgconfig_variable('giomoduledir',
++                                                    define_variable: ['libdir', join_paths(prefix, libdir)])
++  endif
+ endif
+ 
+ assert(gio_module_dir != '', 'GIO_MODULE_DIR is missing from gio-2.0.pc')
+--- meson_options.txt
++++ meson_options.txt
+@@ -7,3 +7,4 @@ option('libproxy', type: 'feature', value: 'auto', description: 'support for lib
+ option('gnome_proxy', type: 'feature', value: 'auto', description: 'support for GNOME desktop proxy configuration')
+ option('installed_tests', type: 'boolean', value: false, description: 'enable installed tests')
+ option('static_modules', type: 'boolean', value: false, description: 'build static modules')
++option('gio_module_dir', type: 'string', description: 'installation directory of gio modules')
