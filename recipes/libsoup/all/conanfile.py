@@ -39,15 +39,18 @@ class LibSoupConan(ConanFile):
     def configure(self):
         if self.options.shared:
             del self.options.fPIC
+        del self.settings.compiler.libcxx
+        del self.settings.compiler.cppstd
 
     def build_requirements(self):
         self.build_requires("meson/0.55.0")
 
     def requirements(self):
+        self.requires("glib/2.65.1")
         self.requires("sqlite3/3.32.3")
         self.requires("libxml2/2.9.10")
         self.requires("libpsl/0.21.1")
-        self.requires("zlib/1.2.11:q")
+        self.requires("zlib/1.2.11")
         if self.options.with_brotli:
             self.requires("brotli/1.0.7")
 
@@ -61,7 +64,7 @@ class LibSoupConan(ConanFile):
         enabled_disabled = lambda v: "enabled" if v else "disabled"
         self._meson = Meson(self)
         self._meson.options["brotli"] = enabled_disabled(self.options.with_brotli)
-        self._meson.options["gnome"] = enabled_disabled(False)
+        self._meson.options["gnome"] = False
         self._meson.options["introspection"] = enabled_disabled(False)  # FIXME: requires gobject-introspection
         self._meson.options["vapi"] = enabled_disabled(False)
         self._meson.configure(source_folder=self._source_subfolder, build_folder=self._build_subfolder)
@@ -71,10 +74,19 @@ class LibSoupConan(ConanFile):
         meson = self._configure_meson()
         meson.build()
 
-    def install(self):
+    def package(self):
         self.copy("COPYING", src=self._source_subfolder, dst="licenses")
         meson = self._configure_meson()
-        meson.build()
+        meson.install()
+
+        tools.rmdir(os.path.join(self.package_folder, "lib", "pkgconfig"))
+        tools.rmdir(os.path.join(self.package_folder, "share"))
+
+    @property
+    def _abi_version(self):
+        return "2.4"
 
     def package_info(self):
-        self.cpp_info.libs = ["soup"]
+        self.cpp_info.libs = ["soup-{}".format(self._abi_version)]
+        self.cpp_info.names["pkg_config"] = "soup-{}".format(self._abi_version)
+        self.cpp_info.includedirs.append(os.path.join("include", "libsoup-{}".format(self._abi_version)))
