@@ -14,11 +14,13 @@ class LibSoupConan(ConanFile):
         "shared": [True, False],
         "fPIC": [True, False],
         "with_brotli": [True, False],
+        "with_krb5": [True, False],
     }
     default_options = {
         "shared": False,
         "fPIC": True,
         "with_brotli": True,
+        "with_krb5": False,
     }
     exports_sources = "patches/**"
     generators = "pkg_config"
@@ -55,6 +57,8 @@ class LibSoupConan(ConanFile):
         self.requires("zlib/1.2.11")
         if self.options.with_brotli:
             self.requires("brotli/1.0.7")
+        if self.options.with_krb5:
+            self.requires("krb5/1.18.2")
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
@@ -68,7 +72,7 @@ class LibSoupConan(ConanFile):
         self._meson.options["brotli"] = enabled_disabled(self.options.with_brotli)
         self._meson.options["gnome"] = False
         self._meson.options["introspection"] = enabled_disabled(False)  # FIXME: missing gobject-introspection recipe
-        self._meson.options["gssapi"] = enabled_disabled(False)
+        self._meson.options["gssapi"] = enabled_disabled(self.options.with_krb5)
         self._meson.options["ntlm"] = enabled_disabled(False)  # FIXME: missing samba-winbind-client (linux only option)
         self._meson.options["vapi"] = enabled_disabled(False)
         self._meson.options["tests"] = False
