@@ -118,6 +118,8 @@ class LibVertoConan(ConanFile):
 
         if self.settings.compiler == "Visual Studio":
             raise ConanInvalidConfiguration("libverto does not support Visual Studio")
+        if self.settings.os == "Windows" and self.options.shared:
+            raise ConanInvalidConfiguration("Shared libraries are not supported on Windows")
 
         count = lambda iterable: sum(1 if it else 0 for it in iterable)
         count_builtins = count(opt == "builtin" for opt in self._event_opts)

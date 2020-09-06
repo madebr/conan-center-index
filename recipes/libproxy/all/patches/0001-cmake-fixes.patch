@@ -15,8 +15,6 @@
        message(STATUS "Building with system libmodman")    
      else()
        message(FATAL_ERROR "Found incompatible libmodman on your system (libmodman 2.X is needed)")
-diff --git libproxy/CMakeLists.txt libproxy/CMakeLists.txt
-index 9151030..b1f3115 100644
 --- libproxy/CMakeLists.txt
 +++ libproxy/CMakeLists.txt
 @@ -20,4 +20,4 @@ include(cmake/devfiles.cmk)

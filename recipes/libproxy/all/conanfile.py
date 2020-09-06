@@ -106,7 +106,10 @@ class LibProxyConan(ConanFile):
             return []
 
     def package_info(self):
-        self.cpp_info.libs = ["proxy"]
+        libname = "proxy"
+        if self.settings.compiler == "Visual Studio":
+            libname = "lib" + libname
+        self.cpp_info.libs = [libname]
         if self.settings.os == "Linux":
             self.cpp_info.system_libs = ["pthread", "m"]
         elif self.settings.os == "Windows":

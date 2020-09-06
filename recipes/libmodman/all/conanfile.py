@@ -74,10 +74,7 @@ class LibModManConan(ConanFile):
         tools.rmdir(os.path.join(self.package_folder, "share"))
 
     def package_info(self):
-        libname = "modman"
-        if self.settings.compiler == "Visual Studio":
-            libname = "lib" + libname
-        self.cpp_info.libs = [libname]
+        self.cpp_info.libs = ["modman"]
         if self.settings.os == "Linux":
             self.cpp_info.system_libs = ["dl", "m"]
 
