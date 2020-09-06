@@ -1,4 +1,4 @@
-from conans import ConanFile, tools, AutoToolsBuildEnvironment, VisualStudioBuildEnvironment
+from conans import ConanFile, tools, AutoToolsBuildEnvironment, RunEnvironment, VisualStudioBuildEnvironment
 from contextlib import contextmanager
 import glob
 import os
@@ -186,7 +186,8 @@ class Libxml2Conan(ConanFile):
         if self.settings.os == "iOS" and self.settings.arch == "x86_64":
             build = False
 
-        self._autotools.configure(args=configure_args, build=build, configure_dir=self._source_subfolder)
+        with tools.environment_append(RunEnvironment(self).vars):
+            self._autotools.configure(args=configure_args, build=build, configure_dir=self._source_subfolder)
         return self._autotools
 
     def _patch_sources(self):
