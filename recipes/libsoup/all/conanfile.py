@@ -9,6 +9,7 @@ class LibSoupConan(ConanFile):
     topics = ("conan", "http", "client", "server", "gnome", "gobject", "glib")
     license = "GPL-2.0-or-later"
     url = "https://github.com/conan-io/conan-center-index"
+    settings = "os", "arch", "compiler", "build_type"
     options = {
         "shared": [True, False],
         "fPIC": [True, False],
@@ -19,7 +20,7 @@ class LibSoupConan(ConanFile):
         "fPIC": True,
         "with_brotli": True,
     }
-    settings = "os", "arch", "compiler", "build_type"
+    exports_sources = "patches/**"
     generators = "pkg_config"
 
     _meson = None
@@ -47,6 +48,7 @@ class LibSoupConan(ConanFile):
 
     def requirements(self):
         self.requires("glib/2.65.1")
+        self.requires("glib-networking/2.65.1")
         self.requires("sqlite3/3.32.3")
         self.requires("libxml2/2.9.10")
         self.requires("libpsl/0.21.1")
@@ -67,10 +69,13 @@ class LibSoupConan(ConanFile):
         self._meson.options["gnome"] = False
         self._meson.options["introspection"] = enabled_disabled(False)  # FIXME: requires gobject-introspection
         self._meson.options["vapi"] = enabled_disabled(False)
+        self._meson.options["tests"] = False
         self._meson.configure(source_folder=self._source_subfolder, build_folder=self._build_subfolder)
         return self._meson
 
     def build(self):
+        for patch in self.conan_data.get("patches", {}).get(self.version, []):
+            tools.patch(**patch)
         meson = self._configure_meson()
         meson.build()
 

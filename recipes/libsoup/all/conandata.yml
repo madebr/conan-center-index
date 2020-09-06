@@ -2,3 +2,7 @@ sources:
   "2.71.0":
     url: "https://ftp.gnome.org/pub/GNOME/sources/libsoup/2.71/libsoup-2.71.0.tar.xz"
     sha256: "88e24fad72d16e1cb692c8782688dbee4bf44151efb0d9ed25b14f3849d9896e"
+patches:
+  "2.71.0":
+    - patch_file: "patches/0001-2.71.0-meson-no-examples.patch"
+      base_path: "source_subfolder"
