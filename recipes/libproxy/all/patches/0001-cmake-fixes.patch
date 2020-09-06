@@ -25,8 +25,6 @@ index 9151030..b1f3115 100644
  ### Tests
 -add_testdirectory(test)
 +#add_testdirectory(test)
-diff --git libproxy/cmake/libproxy.cmk libproxy/cmake/libproxy.cmk
-index aab7593..c22f629 100644
 --- libproxy/cmake/libproxy.cmk
 +++ libproxy/cmake/libproxy.cmk
 @@ -1,4 +1,4 @@
@@ -35,8 +33,12 @@ index aab7593..c22f629 100644
  if(WIN32)
    target_link_libraries(libproxy modman;ws2_32;${LIBPROXY_LIBRARIES})
  else()
-diff --git libproxy/cmake/modules/config_gnome.cmk libproxy/cmake/modules/config_gnome.cmk
-index 4326972..b5b44b3 100644
+@@ -21,1 +21,1 @@
+-set_target_properties(libproxy PROPERTIES PREFIX "" VERSION 1.0.0 SOVERSION 1)
++set_target_properties(libproxy PROPERTIES PREFIX "" IMPORT_PREFIX "" VERSION 1.0.0 SOVERSION 1)
+@@ -24,1 +24,1 @@
+-install(TARGETS libproxy DESTINATION ${LIB_INSTALL_DIR})
++install(TARGETS libproxy LIBRARY DESTINATION lib RUNTIME DESTINATION bin ARCHIVE DESTINATION lib)
 --- libproxy/cmake/modules/config_gnome.cmk
 +++ libproxy/cmake/modules/config_gnome.cmk
 @@ -3,7 +3,7 @@ if (NOT WIN32 AND NOT APPLE)
@@ -48,8 +50,6 @@ index 4326972..b5b44b3 100644
      px_check_modules(GNOME2 gconf-2.0 gobject-2.0)
    endif(WITH_GNOME3)
    
-diff --git libproxy/cmake/pxmodule.cmk libproxy/cmake/pxmodule.cmk
-index bbbd989..f396254 100644
 --- libproxy/cmake/pxmodule.cmk
 +++ libproxy/cmake/pxmodule.cmk
 @@ -5,7 +5,7 @@ function(px_module name build builtin)
@@ -61,8 +61,6 @@ index bbbd989..f396254 100644
      if(builtin)
        set(built "*")
        set_property(SOURCE modules/${name}.cpp PROPERTY COMPILE_DEFINITIONS LIBEXECDIR="${LIBEXECDIR}";MM_MODULE_BUILTIN=${name})
-diff --git utils/CMakeLists.txt utils/CMakeLists.txt
-index 52010c6..9d622f1 100644
 --- utils/CMakeLists.txt
 +++ utils/CMakeLists.txt
 @@ -1,5 +1,5 @@

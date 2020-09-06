@@ -109,6 +109,8 @@ class LibProxyConan(ConanFile):
         self.cpp_info.libs = ["proxy"]
         if self.settings.os == "Linux":
             self.cpp_info.system_libs = ["pthread", "m"]
+        elif self.settings.os == "Windows":
+            self.cpp_info.system_libs = ["ws2_32"]
         self.cpp_info.system_libs.extend(self._libcxx_libraries)
 
         self.cpp_info.names["pkg_config"] = "libproxy-1.0"
