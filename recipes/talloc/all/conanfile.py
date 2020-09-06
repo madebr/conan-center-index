@@ -15,7 +15,6 @@ class TallocConan(ConanFile):
     options = {
         "shared": [True, False],
         "fPIC": [True, False],
-        "thread": [True, False],
     }
     default_options = {
         "shared": True,
@@ -39,6 +38,8 @@ class TallocConan(ConanFile):
             del self.options.fPIC
         del self.settings.compiler.libcxx
         del self.settings.compiler.cppstd
+        if self.settings.os == "Windows":
+            raise ConanInvalidConfiguration("Windows not supported (yet) due to 'large file support missing' error in configure")
         if not self.options.shared:
             raise ConanInvalidConfiguration("talloc does not support static libraries (due to its new waf build system)")
 
@@ -50,14 +51,7 @@ class TallocConan(ConanFile):
     def _build_context(self):
         if self.settings.compiler == "Visual Studio":
             with tools.vcvars(self.settings):
-                env = {
-                    "CC": "cl -nologo",
-                    "CXX": "cl -nologo",
-                    "LINK": "link -nologo",
-                    "AR": "lib",
-                }
-                with tools.environment_append(env):
-                    yield
+                yield
         else:
             yield
 
@@ -65,7 +59,7 @@ class TallocConan(ConanFile):
         # talloc, as part of samba, uses a specialized waf client
         if self._waf:
             return self._waf
-        waf_cmd = os.path.join(self.source_folder, self._source_subfolder, "buildtools", "bin", "waf").replace("\\", "/")
+        waf_cmd = "python {}".format(os.path.join(self.source_folder, self._source_subfolder, "buildtools", "bin", "waf").replace("\\", "/"))
         self._waf = WafBuildHelper(self, configure_folder=self._source_subfolder, waf=waf_cmd)
         conf_args = [
             "--without-gettext",
@@ -106,24 +100,42 @@ class TallocConan(ConanFile):
 
 
 class WafBuildHelper(object):
-    def __init__(self, conanfile, configure_folder=None, waf="waf"):
+    def __init__(self, conanfile, configure_folder=None, waf=None):
         self.conanfile = conanfile
         self.vars = AutoToolsBuildEnvironment(conanfile).vars
         if "pkg_config" in self.conanfile.generators:
             self.vars["PKG_CONFIG_PATH"] = [self.conanfile.install_folder]
         self.configure_folder = os.path.realpath(configure_folder) if configure_folder is not None else None
-        self.waf = waf
+        self.waf = "waf" if waf is None else waf
+        self.verbose = False
 
     def run_waf(self, args):
         safe_args = " ".join(shlex.quote(a) for a in args)
+        extra = []
+        if self.verbose:
+            extra.append("-vvv")
+        extra_args = " {}".format(" ".join(extra)) if extra else ""
         with tools.chdir(self.configure_folder) if self.configure_folder else tools.no_op():
-            self.conanfile.run("{} {}".format(self.waf, safe_args))
+            self.conanfile.run("{} {}{}".format(self.waf, safe_args, extra_args))
 
     def configure(self, args=None):
         args = args if args is not None else []
         waf_args = ["configure"] + args
         if not self._is_flag_in_args("prefix", waf_args):
             waf_args.append("--prefix={}".format(self.conanfile.package_folder).replace("\\", "/"))
+
+        compiler_pref = {
+            "Visual Studio": "msvc",
+            "gcc": "g++",
+            "clang": "clang++",
+            "apple-clang": "clang++",
+            "intel": "icc",
+        }.get(str(self.conanfile.settings.get_safe("compiler")))
+        if not self._is_flag_in_args("check-c-compiler", waf_args):
+            waf_args.append("--check-c-compiler={}".format(compiler_pref))
+        if self.conanfile.settings.get_safe("compiler.cppstd"):
+            if not self._is_flag_in_args("check-cxx-compiler", waf_args):
+                waf_args.append("--check-cxx-compiler={}".format(compiler_pref))
 
         with tools.environment_append(self.vars):
             self.run_waf(waf_args)
