@@ -6,3 +6,5 @@ patches:
   "2.0.1":
     - patch_file: "patches/0001-cmake-fixes+allow-static.patch"
       base_path: "source_subfolder"
+    - patch_file: "patches/0002-fix-mingw.patch"
+      base_path: "source_subfolder"
