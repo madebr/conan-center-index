@@ -67,7 +67,9 @@ class LibSoupConan(ConanFile):
         self._meson = Meson(self)
         self._meson.options["brotli"] = enabled_disabled(self.options.with_brotli)
         self._meson.options["gnome"] = False
-        self._meson.options["introspection"] = enabled_disabled(False)  # FIXME: requires gobject-introspection
+        self._meson.options["introspection"] = enabled_disabled(False)  # FIXME: missing gobject-introspection recipe
+        self._meson.options["gssapi"] = enabled_disabled(False)
+        self._meson.options["ntlm"] = enabled_disabled(False)  # FIXME: missing samba-winbind-client (linux only option)
         self._meson.options["vapi"] = enabled_disabled(False)
         self._meson.options["tests"] = False
         self._meson.configure(source_folder=self._source_subfolder, build_folder=self._build_subfolder)
