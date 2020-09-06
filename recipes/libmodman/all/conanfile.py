@@ -66,7 +66,6 @@ class LibModManConan(ConanFile):
         cmake.build()
 
     def package(self):
-        # raise Exception
         self.copy(pattern="COPYING", dst="licenses", src=self._source_subfolder)
         cmake = self._configure_cmake()
         cmake.install()
@@ -75,7 +74,10 @@ class LibModManConan(ConanFile):
         tools.rmdir(os.path.join(self.package_folder, "share"))
 
     def package_info(self):
-        self.cpp_info.libs = ["modman"]
+        libname = "modman"
+        if self.settings.compiler == "Visual Studio":
+            libname = "lib" + libname
+        self.cpp_info.libs = [libname]
         if self.settings.os == "Linux":
             self.cpp_info.system_libs = ["dl", "m"]
 
