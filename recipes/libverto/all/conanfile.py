@@ -1,5 +1,6 @@
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
 from conans.errors import ConanInvalidConfiguration
+from contextlib import contextmanager
 import os
 
 
@@ -28,7 +29,7 @@ class LibVertoConan(ConanFile):
         "with_glib": "auto",
         "with_libevent": "auto",
         "with_tevent": "auto",
-        "default": "libev",
+        "default": "libevent",
     }
     settings = "os", "arch", "compiler", "build_type"
     exports_sources = "patches/**"
@@ -115,6 +116,9 @@ class LibVertoConan(ConanFile):
         if self.options.shared:
             del self.options.fPIC
 
+        if self.settings.compiler == "Visual Studio":
+            raise ConanInvalidConfiguration("libverto does not support Visual Studio")
+
         count = lambda iterable: sum(1 if it else 0 for it in iterable)
         count_builtins = count(opt == "builtin" for opt in self._event_opts)
         count_externals = count(opt == True for opt in self._event_opts)
@@ -145,12 +149,32 @@ class LibVertoConan(ConanFile):
     def build_requirements(self):
         self.build_requires("pkgconf/1.7.3")
         self.build_requires("libtool/2.4.6")
+        if tools.os_info.is_windows and not tools.get_env("CONAN_BASH_PATH"):
+            self.build_requires("msys2/20200517")
+
+    @contextmanager
+    def _build_context(self):
+        if self.settings.compiler == "Visual Studio":
+            with tools.vcvars(self.settings):
+                env = {
+                    "CC": "{} cl -nologo".format(tools.unix_path(self.deps_user_info["automake"].compile)),
+                    "CXX": "{} cl -nologo".format(tools.unix_path(self.deps_user_info["automake"].compile)),
+                    "LD": "{} link -nologo".format(tools.unix_path(self.deps_user_info["automake"].compile)),
+                    "AR": "{} lib".format(tools.unix_path(self.deps_user_info["automake"].ar_lib)),
+                }
+                with tools.environment_append(env):
+                    yield
+        else:
+            yield
 
     def _configure_autotools(self):
         if self._autotools:
             return self._autotools
         self._autotools = AutoToolsBuildEnvironment(self, win_bash=tools.os_info.is_windows)
         self._autotools.libs = []
+        if self.settings.compiler == "Visual Studio":
+            self._autotools.flags.append("-FS")
+            self._autotools.link_flags.extend("-L{}".format(p.replace("\\", "/")) for p in self.deps_cpp_info.lib_paths)
         yes_no = lambda v: "yes" if v else "no"
         yes_no_builtin = lambda v: {"True": "yes", "False": "no", "builtin": "builtin"}[str(v)]
         conf_args = [
@@ -162,28 +186,25 @@ class LibVertoConan(ConanFile):
             "--with-libevent={}".format(yes_no_builtin(self._with_libevent)),
             "--with-tevent={}".format(yes_no_builtin(self._with_tevent)),
         ]
-        self._autotools.configure(args=conf_args, configure_dir=self._source_subfolder)
+        with tools.environment_append({"PKG_CONFIG_PATH": self.install_folder.replace("\\", "/")}):
+            self._autotools.configure(args=conf_args, configure_dir=self._source_subfolder)
         return self._autotools
 
     def build(self):
         for patch in self.conan_data.get("patches", {}).get(self.version, []):
             tools.patch(**patch)
         with tools.chdir(self._source_subfolder):
-            self.run("autoreconf -fiv", run_environment=True)
-        autotools = self._configure_autotools()
-        autotools.make()
-
-    def package_id(self):
-        del self.info.options.default
-        self.info.options.with_glib = self._with_glib
-        self.info.options.with_libev = self._with_libev
-        self.info.options.with_libevent = self._with_libevent
-        self.info.options.with_tevent = self._with_tevent
+            with tools.environment_append({"AUTOMAKE_CONAN_INCLUDES": tools.get_env("AUTOMAKE_CONAN_INCLUDES").replace(";", ":")}):
+                self.run("autoreconf -fiv", run_environment=True, win_bash=tools.os_info.is_windows)
+        with self._build_context():
+            autotools = self._configure_autotools()
+            autotools.make()
 
     def package(self):
         self.copy("COPYING", src=self._source_subfolder, dst="licenses")
-        autotools = self._configure_autotools()
-        autotools.install()
+        with self._build_context():
+            autotools = self._configure_autotools()
+            autotools.install()
 
         os.unlink(os.path.join(self.package_folder, "lib", "libverto.la"))
 
@@ -197,6 +218,13 @@ class LibVertoConan(ConanFile):
         #     os.unlink(os.path.join(self.package_folder, "lib", "libverto-tevent.la"))
 
         tools.rmdir(os.path.join(self.package_folder, "lib", "pkgconfig"))
+
+    def package_id(self):
+        del self.info.options.default
+        self.info.options.with_glib = self._with_glib
+        self.info.options.with_libev = self._with_libev
+        self.info.options.with_libevent = self._with_libevent
+        self.info.options.with_tevent = self._with_tevent
 
     def package_info(self):
         self.cpp_info.components["verto"].libs = ["verto"]

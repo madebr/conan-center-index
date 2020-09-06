@@ -1,6 +1,6 @@
 --- configure.ac
 +++ configure.ac
-@@ -86,6 +86,8 @@ AC_ARG_WITH([tevent],
+@@ -86,6 +86,8 @@
              [case $withval in
                   no) WITH_TEVENT=no;;
                  yes) WITH_TEVENT=yes;;

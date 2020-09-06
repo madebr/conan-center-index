@@ -1,0 +1,8 @@
+--- src/Makefile.am
++++ src/Makefile.am
+@@ -1,4 +1,4 @@
+-AM_CFLAGS = -Wall -Wdeclaration-after-statement
++AM_CFLAGS = 
+ AM_LDFLAGS = -version-info 1:0:0
+ EXTRA_DIST = libverto.symbols libverto-glib.symbols libverto-libev.symbols \
+              libverto-libevent.symbols libverto-tevent.symbols

@@ -49,6 +49,6 @@ int main(int argc, char *argv[])
     free(tinfo);
 
     verto_free(ctx);
-    verto_cleanup();  // <= munmap_chunk(): invalid pointer here
+//    verto_cleanup();  // <= munmap_chunk(): invalid pointer here
     return 0;
 }
