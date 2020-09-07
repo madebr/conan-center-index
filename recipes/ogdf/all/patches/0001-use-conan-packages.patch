@@ -1,0 +1,61 @@
+--- CMakeLists.txt
++++ CMakeLists.txt
+@@ -5,1 +5,1 @@
+-list(INSERT CMAKE_MODULE_PATH 0 "${module_dir}" )
++list(APPEND CMAKE_MODULE_PATH "${module_dir}" )
+--- cmake/coin.cmake
++++ cmake/coin.cmake
+@@ -12,7 +12,7 @@
+ endif()
+ 
+ # compilation
+-file(GLOB_RECURSE COIN_SOURCES src/coin/*.cpp)
++file(GLOB_RECURSE COIN_SOURCES src/coin/OsiClp/*.cpp)
+ if(NOT COIN_SOLVER STREQUAL "GRB")
+   list(REMOVE_ITEM COIN_SOURCES "${PROJECT_SOURCE_DIR}/src/coin/Osi/OsiGrbSolverInterface.cpp")
+ endif()
+@@ -28,7 +28,7 @@
+-    -DCLP_BUILD -DCOINUTILS_BUILD -DOSI_BUILD -D__OSI_CLP__
++    -D__OSI_CLP__
+     -DCOMPILE_IN_CG -DCOMPILE_IN_CP -DCOMPILE_IN_LP -DCOMPILE_IN_TM
+     -DHAVE_CONFIG_H -D_CRT_SECURE_NO_WARNINGS)
+-
++target_link_libraries(COIN PUBLIC $<BUILD_INTERFACE:CONAN_PKG::coin-clp> $<BUILD_INTERFACE:CONAN_PKG::coin-osi>)
+ # external LP solver
+ if(COIN_EXTERNAL_SOLVER_LIBRARIES)
+   target_link_libraries(COIN PUBLIC ${COIN_EXTERNAL_SOLVER_LIBRARIES})
+@@ -64,1 +64,1 @@
+-  LIBRARY DESTINATION "${COIN_INSTALL_LIBRARY_DIR}"
++  LIBRARY DESTINATION "${COIN_INSTALL_LIBRARY_DIR}" RUNTIME DESTINATION "${COIN_INSTALL_RUNTIME_DIR}"
+@@ -68,7 +68,7 @@
+-install(DIRECTORY include/coin
+-  DESTINATION "${COIN_INSTALL_INCLUDE_DIR}"
+-  FILES_MATCHING
+-    PATTERN "*.h"
+-    PATTERN "*.hpp")
+-install(EXPORT CoinTargets DESTINATION "${COIN_INSTALL_CMAKE_DIR}")
+-export(EXPORT CoinTargets)
++#install(DIRECTORY include/coin
++#  DESTINATION "${COIN_INSTALL_INCLUDE_DIR}"
++#  FILES_MATCHING
++#    PATTERN "*.h"
++#    PATTERN "*.hpp")
++#install(EXPORT CoinTargets DESTINATION "${COIN_INSTALL_CMAKE_DIR}")
++#export(EXPORT CoinTargets)
+--- cmake/doc.cmake
++++ cmake/doc.cmake
+@@ -18,1 +18,1 @@
+-find_package(Doxygen)
++#find_package(Doxygen)
+--- cmake/ogdf.cmake
++++ cmake/ogdf.cmake
+@@ -177,1 +177,1 @@
+-  LIBRARY DESTINATION "${OGDF_INSTALL_LIBRARY_DIR}"
++  LIBRARY DESTINATION "${OGDF_INSTALL_LIBRARY_DIR}" RUNTIME DESTINATION "${OGDF_INSTALL_RUNTIME_DIR}"
+@@ -187,3 +187,3 @@
+-install(EXPORT OgdfTargets DESTINATION "${OGDF_INSTALL_CMAKE_DIR}")
+-install(FILES "${PROJECT_BINARY_DIR}/ogdf-config.cmake" DESTINATION "${OGDF_INSTALL_CMAKE_DIR}")
+-export(EXPORT OgdfTargets)
++#install(EXPORT OgdfTargets DESTINATION "${OGDF_INSTALL_CMAKE_DIR}")
++#install(FILES "${PROJECT_BINARY_DIR}/ogdf-config.cmake" DESTINATION "${OGDF_INSTALL_CMAKE_DIR}")
++#export(EXPORT OgdfTargets)

@@ -1,0 +1,8 @@
+sources:
+  "2020.02":
+    url: "https://github.com/ogdf/ogdf/archive/catalpa-202002.tar.gz"
+    sha256: "32f3f943675e55d1a23e62293d016dc1644b1176271d60f41788ade60c2d3fc5"
+patches:
+  "2020.02":
+    - patch_file: "patches/0001-use-conan-packages.patch"
+      base_path: "source_subfolder"
