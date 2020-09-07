@@ -1,0 +1,12 @@
+--- acc/acclib/wildargv.ch
++++ acc/acclib/wildargv.ch
+@@ -37,8 +37,8 @@
+ 
+ #if (ACC_OS_WIN32 || ACC_OS_WIN64)
+ #if (ACC_CC_INTELC || ACC_CC_MSC)
+-
+ ACC_EXTERN_C int __acc_cdecl __setargv(void);
++ACC_EXTERN_C int __acc_cdecl __setargv() { return 0; }
+ ACC_EXTERN_C int __acc_cdecl _setargv(void);
+ ACC_EXTERN_C int __acc_cdecl _setargv(void) { return __setargv(); }
+ 
