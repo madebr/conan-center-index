@@ -105,6 +105,6 @@ class F2cConan(ConanFile):
         if self.settings.os == "Linux":
             self.cpp_info.system_libs = ["m"]
 
-        bin_path = os.path.join(self.package_folder, "Bin")
+        bin_path = os.path.join(self.package_folder, "bin")
         self.output.info("Appending PATH environment variable: {}".format(bin_path))
         self.env_info.PATH.append(bin_path)

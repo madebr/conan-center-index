@@ -5,7 +5,7 @@ include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
 conan_basic_setup()
 
 add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/cylarea.c
-    COMMAND CMAKE -E make_directory tmp
+    COMMAND "${CMAKE_COMMAND}" -E make_directory tmp
     COMMAND f2c -c -Ttmp "${PROJECT_SOURCE_DIR}/cylarea.f"
     DEPENDS "${PROJECT_SOURCE_DIR}/cylarea.f"
 )
