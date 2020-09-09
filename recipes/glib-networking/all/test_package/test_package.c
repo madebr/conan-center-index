@@ -14,7 +14,13 @@
 DECLARE_BACKEND(BACKEND);
 
 int main() {
+#ifdef STATIC_BACKEND
+    printf("Loading backend " BACKEND_STRING "...\n");
+    fflush(stdout);
     LOAD_BACKEND(BACKEND);
+    printf("Backend loaded.\n");
+    fflush(stdout);
+#endif
 
     g_setenv ("GSETTINGS_BACKEND", "memory", TRUE);
     g_setenv ("GIO_USE_TLS", BACKEND_STRING, TRUE);

@@ -31,11 +31,11 @@ class GLibNetworkingConan(ConanFile):
     exports_sources = "patches/**"
 
     _meson = None
-    
+
     @property
     def _source_subfolder(self):
         return "source_subfolder"
-    
+
     @property
     def _build_subfolder(self):
         return "build_subfolder"
@@ -109,24 +109,37 @@ class GLibNetworkingConan(ConanFile):
 
         tools.rmdir(os.path.join(self.package_folder, "share"))
         tools.rmdir(os.path.join(self.package_folder, "lib", "systemd"))
-        tools.rmdir(os.path.join(self.package_folder, self._gio_module_dir, "pkgconfig"))
+        # tools.rmdir(os.path.join(self.package_folder, self._gio_module_dir, "pkgconfig"))
 
     def package_info(self):
         if self.options.with_openssl:
             self.cpp_info.components["gioopenssl"].libs = ["gioopenssl"]
             self.cpp_info.components["gioopenssl"].libdirs = [self._gio_module_dir]
+            if self.settings.os == "Windows":
+                self.cpp_info.components["gioopenssl"].bindirs.append(self._gio_module_dir)
             self.cpp_info.components["gioopenssl"].requires = ["glib::gio", "openssl::openssl"]
+            # self.cpp_info.components["gioopenssl"].names["pkg_config"] = "gioopenssl"
 
         if self.options.with_gnutls:
             self.cpp_info.components["giognutls"].libs = ["giognutls"]
             self.cpp_info.components["giognutls"].libdirs = [self._gio_module_dir]
+            if self.settings.os == "Windows":
+                self.cpp_info.components["giognutls"].bindirs.append(self._gio_module_dir)
             self.cpp_info.components["giognutls"].requires = ["glib::gio", "gnutls::gnutls"]
+            # self.cpp_info.components["giognutls"].names["pkg_config"] = "giognutls"
 
         if self.options.with_libproxy:
             self.cpp_info.components["giolibproxy"].libs = ["giolibproxy"]
             self.cpp_info.components["giolibproxy"].libdirs = [self._gio_module_dir]
+            if self.settings.os == "Windows":
+                self.cpp_info.components["giolibproxy"].bindirs.append(self._gio_module_dir)
             self.cpp_info.components["giolibproxy"].requires = ["glib::gio", "libproxy::libproxy"]
+            # self.cpp_info.components["giolibproxy"].names["pkg_config"] = "giolibproxy"
 
         gio_extra_modules = os.path.join(self.package_folder, self._gio_module_dir)
         self.output.info("Appending GIO_EXTRA_MODULES environment variable: {}".format(gio_extra_modules))
         self.env_info.GIO_EXTRA_MODULES.append(gio_extra_modules)
+
+        bin_path = os.path.join(self.package_folder, "bin")
+        self.output.info("Appending PATH environment variable: {}".format(bin_path))
+        self.env_info.PATH.append(bin_path)

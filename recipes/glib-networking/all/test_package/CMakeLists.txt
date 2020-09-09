@@ -7,15 +7,21 @@ conan_basic_setup(TARGETS)
 set(TLS_BACKENDS "" CACHE STRING "tls backends")
 option(STATIC_BACKEND "backend is built statically")
 
+include(FindPkgConfig)
+
 foreach(TLS_BACKEND ${TLS_BACKENDS})
     set(_target ${PROJECT_NAME}_${TLS_BACKEND})
     add_executable(${_target} test_package.c)
+
+    pkg_check_modules(pkg_${TLS_BACKEND} REQUIRED IMPORTED_TARGET gio${TLS_BACKEND})
+
     target_compile_definitions(${_target} PRIVATE BACKEND=${TLS_BACKEND} BACKEND_STRING="${TLS_BACKEND}")
     if(STATIC_BACKEND)
         target_compile_definitions(${_target} PRIVATE STATIC_BACKEND)
     endif()
     target_link_libraries(${_target} PRIVATE CONAN_PKG::glib)
+    target_link_libraries(${_target} PRIVATE CONAN_PKG::glib-networking)
     if(STATIC_BACKEND)
-        target_link_libraries(${_target} PRIVATE CONAN_PKG::glib-networking)
+        target_link_libraries(${_target} PRIVATEPkgConfig::pkg_${TLS_BACKEND})
     endif()
 endforeach()

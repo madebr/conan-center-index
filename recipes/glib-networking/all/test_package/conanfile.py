@@ -4,7 +4,7 @@ import os
 
 class TestPackageConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
-    generators = "cmake", "cmake_find_package"
+    generators = "cmake", "pkg_config"
 
     @property
     def _tls_backends(self):
@@ -14,6 +14,9 @@ class TestPackageConan(ConanFile):
         if self.options["glib-networking"].with_gnutls:
             res.append("gnutls")
         return res
+
+    def build_requirements(self):
+        self.build_requires("pkgconf/1.7.3")
 
     def build(self):
         cmake = CMake(self)
