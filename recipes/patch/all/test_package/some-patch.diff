@@ -1,0 +1,11 @@
+--- source.c
++++ source.c
+@@ -1,6 +1,6 @@
+-#include <stdlib.h>
++#include <stdio.h>
+
+ int main () {
+-    printf("Hello world from test_package.\n");
++    printf("Hello world from test_package.c\n");
+     return 1;
+ }
