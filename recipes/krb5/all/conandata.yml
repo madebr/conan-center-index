@@ -1,0 +1,12 @@
+sources:
+  "1.18.2":
+    url: "https://web.mit.edu/kerberos/dist/krb5/1.18/krb5-1.18.2.tar.gz"
+    sha256: "c6e4c9ec1a98141c3f5d66ddf1a135549050c9fab4e9a4620ee9b22085873ae0"
+patches:
+  "1.18.2":
+    - patch_file: "patches/0001-Use-PKG_CHECK_MODULES-to-system-library-com_err.patch"
+      base_path: "source_subfolder"
+    - patch_file: "patches/0002-allow-openssl-from-env.patch"
+      base_path: "source_subfolder"
+    - patch_file: "patches/0003-no-htmlhelp.patch"
+      base_path: "source_subfolder"

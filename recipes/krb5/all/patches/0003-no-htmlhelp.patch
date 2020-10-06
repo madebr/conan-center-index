@@ -1,0 +1,11 @@
+--- src/windows/leash/Makefile.in
++++ src/windows/leash/Makefile.in
+@@ -3,7 +3,7 @@
+ 
+ EXE_NAME=leash
+ 
+-SUBDIRS= htmlhelp
++SUBDIRS=
+ 
+ OBJS=   \
+ 	$(OUTPRE)Leash.obj \
