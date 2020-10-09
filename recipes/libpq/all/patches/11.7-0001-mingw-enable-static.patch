@@ -1,0 +1,55 @@
+--- src/Makefile.shlib
++++ src/Makefile.shlib
+@@ -257,6 +257,7 @@ ifeq ($(PORTNAME), cygwin)
+   LINK.shared		= $(CC) -shared
+   ifdef SO_MAJOR_VERSION
+     shlib		= cyg$(NAME)$(DLSUFFIX)
++    implib		= cyg$(NAME)$(DLSUFFIX).a
+   endif
+   haslibarule   = yes
+ endif
+@@ -264,6 +265,7 @@ endif
+ ifeq ($(PORTNAME), win32)
+   ifdef SO_MAJOR_VERSION
+     shlib		= lib$(NAME)$(DLSUFFIX)
++    implib		= lib$(NAME)$(DLSUFFIX).a
+   endif
+   haslibarule   = yes
+ endif
+@@ -371,8 +373,8 @@ else
+ # Win32 case
+ 
+ # See notes in src/backend/parser/Makefile about the following two rules
+-$(stlib): $(shlib)
+-	touch $@
++$(stlib): $(OBJS)
++	$(AR) $(AROPT) $@ $(filter-out libpqrc.o,$(OBJS))
+ 
+ # XXX A backend that loads a module linked with libgcc_s_dw2-1.dll will exit
+ # uncleanly, hence -static-libgcc.  (Last verified with MinGW-w64 compilers
+@@ -383,13 +385,13 @@ $(stlib): $(shlib)
+ # If SHLIB_EXPORTS is set, the rules below will build a .def file from that.
+ # Else we just use --export-all-symbols.
+ ifeq (,$(SHLIB_EXPORTS))
+-$(shlib): $(OBJS) | $(SHLIB_PREREQS)
+-	$(CC) $(CFLAGS)  -shared -static-libgcc -o $@  $(OBJS) $(LDFLAGS) $(LDFLAGS_SL) $(SHLIB_LINK) $(LIBS) -Wl,--export-all-symbols -Wl,--out-implib=$(stlib)
++$(shlib) $(implib): $(OBJS) | $(SHLIB_PREREQS)
++	$(CC) $(CFLAGS)  -shared -static-libgcc -o $@  $(OBJS) $(LDFLAGS) $(LDFLAGS_SL) $(SHLIB_LINK) $(LIBS) -Wl,--export-all-symbols -Wl,--out-implib=$(implib)
+ else
+ DLL_DEFFILE = lib$(NAME)dll.def
+ 
+-$(shlib): $(OBJS) $(DLL_DEFFILE) | $(SHLIB_PREREQS)
+-	$(CC) $(CFLAGS)  -shared -static-libgcc -o $@  $(OBJS) $(DLL_DEFFILE) $(LDFLAGS) $(LDFLAGS_SL) $(SHLIB_LINK) $(LIBS) -Wl,--out-implib=$(stlib)
++$(shlib) $(implib): $(OBJS) $(DLL_DEFFILE) | $(SHLIB_PREREQS)
++	$(CC) $(CFLAGS)  -shared -static-libgcc -o $@  $(OBJS) $(DLL_DEFFILE) $(LDFLAGS) $(LDFLAGS_SL) $(SHLIB_LINK) $(LIBS) -Wl,--out-implib=$(implib)
+ endif
+ 
+ endif # PORTNAME == cygwin
+@@ -483,6 +485,7 @@ endif # not cygwin
+ endif # not aix
+ ifneq (,$(findstring $(PORTNAME),win32 cygwin))
+ 	$(INSTALL_SHLIB) $< '$(DESTDIR)$(bindir)/$(shlib)'
++	$(INSTALL_STLIB) $(implib) '$(DESTDIR)$(libdir)/$(implib)'
+ endif
+ else # no soname
+ 	$(INSTALL_SHLIB) $< '$(DESTDIR)$(pkglibdir)/$(shlib)'

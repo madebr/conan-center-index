@@ -8,3 +8,13 @@ sources:
   "11.5":
     url: "https://ftp.postgresql.org/pub/source/v11.5/postgresql-11.5.tar.gz"
     sha256: "f639af0f8c3f1e470e41c8108cbdaea5836b2738cadd422135aa2a0febc8ae78"
+patches:
+  "12.2":
+    - patch_file: "patches/12.2-0001-mingw-enable-static.patch"
+      base_path: "source_subfolder"
+  "11.7":
+    - patch_file: "patches/11.7-0001-mingw-enable-static.patch"
+      base_path: "source_subfolder"
+  "11.5":
+    - patch_file: "patches/11.7-0001-mingw-enable-static.patch"
+      base_path: "source_subfolder"
