@@ -1,4 +1,7 @@
 sources:
+  "13.0":
+    url: "https://ftp.postgresql.org/pub/source/v13.0/postgresql-13.0.tar.gz"
+    sha256: "67b09fca40a35360aef82fee43546271e6a04c33276e0093c5fb48653b2f5afa"
   "12.2":
     url: "https://ftp.postgresql.org/pub/source/v12.2/postgresql-12.2.tar.gz"
     sha256: "8808449444ee9b086054a6dcfbfb98029e4f8022372c2edf3de5b6d8f417c8e4"
@@ -9,6 +12,9 @@ sources:
     url: "https://ftp.postgresql.org/pub/source/v11.5/postgresql-11.5.tar.gz"
     sha256: "f639af0f8c3f1e470e41c8108cbdaea5836b2738cadd422135aa2a0febc8ae78"
 patches:
+  "13.0":
+    - patch_file: "patches/13.0-0001-mingw-enable-static.patch"
+      base_path: "source_subfolder"
   "12.2":
     - patch_file: "patches/12.2-0001-mingw-enable-static.patch"
       base_path: "source_subfolder"
