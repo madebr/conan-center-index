@@ -5,6 +5,7 @@ from conans.errors import ConanException
 
 from conans.errors import ConanInvalidConfiguration
 import os
+import platform
 import sys
 import shlex
 import shutil
@@ -683,35 +684,51 @@ class BoostConan(ConanFile):
 
         return flags
 
+    def _normalize_compiler_path(self, path):
+        if not path:
+            return path
+        if tools.os_info.is_windows and platform.system() != "Windows":
+            # When running conan inside msys2, tools.which returns unix paths but Boost.Build expects Windows paths on Windows
+            output = StringIO()
+            self.run("cygpath -w '{}'".format(path), output=output)
+            path = output.getvalue().strip().split("\n")[-1]
+        return path
+
     @property
     def _ar(self):
-        if "AR" in os.environ:
-            return os.environ["AR"]
-        if tools.is_apple_os(self.settings.os) and self.settings.compiler == "apple-clang":
-            return tools.XCRun(self.settings).ar
-        return None
+        def find_ar():
+            if "AR" in os.environ:
+                return os.environ["AR"]
+            if tools.is_apple_os(self.settings.os) and self.settings.compiler == "apple-clang":
+                return tools.XCRun(self.settings).ar
+            return ""
+        return self._normalize_compiler_path(find_ar())
 
     @property
     def _ranlib(self):
-        if "RANLIB" in os.environ:
-            return os.environ["RANLIB"]
-        if tools.is_apple_os(self.settings.os) and self.settings.compiler == "apple-clang":
-            return tools.XCRun(self.settings).ranlib
-        return None
+        def find_ranlib():
+            if "RANLIB" in os.environ:
+                return os.environ["RANLIB"]
+            if tools.is_apple_os(self.settings.os) and self.settings.compiler == "apple-clang":
+                return tools.XCRun(self.settings).ranlib
+            return None
+        return self._normalize_compiler_path(find_ranlib())
 
     @property
     def _cxx(self):
-        if "CXX" in os.environ:
-            return os.environ["CXX"]
-        if tools.is_apple_os(self.settings.os) and self.settings.compiler == "apple-clang":
-            return tools.XCRun(self.settings).cxx
-        compiler_version = str(self.settings.compiler.version)
-        major = compiler_version.split(".")[0]
-        if self.settings.compiler == "gcc":
-            return tools.which("g++-%s" % compiler_version) or tools.which("g++-%s" % major) or tools.which("g++") or ""
-        if self.settings.compiler == "clang":
-            return tools.which("clang++-%s" % compiler_version) or tools.which("clang++-%s" % major) or tools.which("clang++") or ""
-        return ""
+        def find_cxx():
+            if "CXX" in os.environ:
+                return os.environ["CXX"]
+            if tools.is_apple_os(self.settings.os) and self.settings.compiler == "apple-clang":
+                return tools.XCRun(self.settings).cxx
+            compiler_version = str(self.settings.compiler.version)
+            major = compiler_version.split(".")[0]
+            if self.settings.compiler == "gcc":
+                return tools.which("g++-%s" % compiler_version) or tools.which("g++-%s" % major) or tools.which("g++") or ""
+            if self.settings.compiler == "clang":
+                return tools.which("clang++-%s" % compiler_version) or tools.which("clang++-%s" % major) or tools.which("clang++") or ""
+            return ""
+        return self._normalize_compiler_path(find_cxx())
 
     def _create_user_config_jam(self, folder):
         """To help locating the zlib and bzip2 deps"""
