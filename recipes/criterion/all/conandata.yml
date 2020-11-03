@@ -1,0 +1,4 @@
+sources:
+  "2.3.3":
+    url: "https://github.com/Snaipe/Criterion/releases/download/v2.3.3/criterion-v2.3.3.tar.bz2"
+    sha256: "8c85e1fcdb9a39b82bee50394bedfe74a0c839ffff129ddfc6fb73b11adafa29"
