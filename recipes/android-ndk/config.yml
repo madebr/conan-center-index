@@ -1,4 +1,3 @@
----
-    versions:
-      "r21d":
-        folder: all
+versions:
+  "r21d":
+    folder: all
