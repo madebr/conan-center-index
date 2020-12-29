@@ -1,0 +1,285 @@
+--- common/compat.c
++++ common/compat.c
+@@ -693,7 +693,7 @@
+ {
+ 	static const char padchar[] =
+ 		"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+-	static const int maxpathlen = 1024;
++	#define maxpathlen  1024
+ 
+ 	char *start, *trv, *suffp, *carryp;
+ 	char *pad;
+--- common/compat.h
++++ common/compat.h
+@@ -385,4 +385,26 @@
+ int        p11_ascii_tolower (int c);
+ int        p11_ascii_toupper (int c);
+ 
++#if defined(_MSC_VER)
++#if SIZEOF_SIZE_T == 4
++typedef __int32 ssize_t;
++#elif SIZEOF_SIZE_T == 8
++typedef __int64 ssize_t;
++#else
++#error "Unsupported pointer size"
++#endif
++#endif
++
++#ifndef STDIN_FILENO
++#define STDIN_FILENO 0
++#endif
++
++#ifndef STDOUT_FILENO
++#define STDOUT_FILENO 1
++#endif
++
++#ifndef STDIN_FILENO
++#define STDIN_FILENO 1
++#endif
++
+ #endif /* __COMPAT_H__ */
+--- common/debug.c
++++ common/debug.c
+@@ -47,7 +47,9 @@
+ #include <stdarg.h>
+ #include <stdlib.h>
+ #include <string.h>
++#ifdef HAVE_UNISTD_H
+ #include <unistd.h>
++#endif
+ 
+ #define P11_DEBUG_MESSAGE_MAX 512
+ 
+--- common/tool.c
++++ common/tool.c
+@@ -46,7 +46,9 @@
+ #include <string.h>
+ #include <stdio.h>
+ #include <stdlib.h>
++#ifdef HAVE_UNISTD_H
+ #include <unistd.h>
++#endif
+ 
+ #include "tool.h"
+ 
+--- meson.build
++++ meson.build
+@@ -83,6 +83,7 @@
+ ]
+ 
+ conf.set('SIZEOF_UNSIGNED_LONG', cc.sizeof('unsigned long'))
++conf.set('SIZEOF_SIZE_T', cc.sizeof('size_t'))
+ 
+ nanosleep_deps = []
+ dlopen_deps = []
+@@ -250,6 +251,8 @@
+ 
+ headers = [
+   'stdbool.h',
++  'unistd.h',
++  'sys/param.h',
+ ]
+ 
+ foreach h : headers
+--- p11-kit/conf.c
++++ p11-kit/conf.c
+@@ -45,7 +45,9 @@
+ #include "path.h"
+ #include "private.h"
+ 
++#ifdef HAVE_SYS_PARAM_H
+ #include <sys/param.h>
++#endif
+ #include <sys/stat.h>
+ #include <sys/types.h>
+ 
+--- p11-kit/lists.c
++++ p11-kit/lists.c
+@@ -42,7 +42,9 @@
+ #include <string.h>
+ #include <stdio.h>
+ #include <stdlib.h>
++#ifdef HAVE_UNISTD_H
+ #include <unistd.h>
++#endif
+ 
+ #include "message.h"
+ #include "p11-kit.h"
+--- p11-kit/meson.build
++++ p11-kit/meson.build
+@@ -18,7 +18,7 @@
+ libp11_kit_internal_sources += custom_target('generate virtual-fixed-generated.h',
+                                              output: 'virtual-fixed-generated.h',
+                                              command: [
+-                                               meson.current_source_dir() / 'gen-virtual-fixed.sh',
++                                               'sh', meson.current_source_dir() / 'gen-virtual-fixed.sh',
+                                                '@OUTPUT@', '64'
+                                              ])
+ libp11_kit_internal_sources += 'virtual.c'
+--- p11-kit/modules.c
++++ p11-kit/modules.c
+@@ -68,7 +68,9 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#ifdef HAVE_UNISTD_H
+ #include <unistd.h>
++#endif
+ 
+ /**
+  * SECTION:p11-kit
+@@ -1901,7 +1903,7 @@
+ 	int i;
+ 
+ 	for (i = 0; modules[i] != NULL; i++) {
+-		rv = release_module_inlock_rentrant (modules[i], __PRETTY_FUNCTION__);
++		rv = release_module_inlock_rentrant (modules[i], __func__);
+ 		if (rv != CKR_OK)
+ 			ret = rv;
+ 	}
+@@ -2714,7 +2716,7 @@
+ 
+ 		p11_message_clear ();
+ 
+-		release_module_inlock_rentrant (module, __PRETTY_FUNCTION__);
++		release_module_inlock_rentrant (module, __func__);
+ 
+ 	p11_unlock ();
+ 
+@@ -2724,7 +2726,7 @@
+ CK_RV
+ p11_module_release_inlock_reentrant (CK_FUNCTION_LIST *module)
+ {
+-	return release_module_inlock_rentrant (module, __PRETTY_FUNCTION__);
++	return release_module_inlock_rentrant (module, __func__);
+ }
+ 
+ /**
+--- p11-kit/p11-kit.c
++++ p11-kit/p11-kit.c
+@@ -47,7 +47,9 @@
+ #include <string.h>
+ #include <stdio.h>
+ #include <stdlib.h>
++#ifdef HAVE_UNISTD_H
+ #include <unistd.h>
++#endif
+ 
+ #include "tool.h"
+ 
+--- p11-kit/pin.c
++++ p11-kit/pin.c
+@@ -50,7 +50,9 @@
+ #include <fcntl.h>
+ #include <stdlib.h>
+ #include <string.h>
++#ifdef HAVE_UNISTD_H
+ #include <unistd.h>
++#endif
+ 
+ /**
+  * SECTION:p11-kit-pin
+--- p11-kit/remote.c
++++ p11-kit/remote.c
+@@ -47,7 +47,9 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#ifdef HAVE_UNISTD_H
+ #include <unistd.h>
++#endif
+ 
+ int
+ main (int argc,
+--- p11-kit/rpc-client.c
++++ p11-kit/rpc-client.c
+@@ -48,7 +48,9 @@
+ 
+ #include <assert.h>
+ #include <string.h>
++#ifdef UNISTD_H
+ #include <unistd.h>
++#endif
+ 
+ /* The error used by us when parsing of rpc message fails */
+ #define PARSE_ERROR   CKR_DEVICE_ERROR
+--- p11-kit/rpc-server.c
++++ p11-kit/rpc-server.c
+@@ -51,12 +51,16 @@
+ #include "uri.h"
+ 
+ #include <sys/types.h>
++#ifdef HAVE_SYS_PARAM_H
+ #include <sys/param.h>
++#endif
+ #include <assert.h>
+ #include <errno.h>
+ #include <stdlib.h>
+ #include <string.h>
++#ifdef HAVE_UNISTD_H
+ #include <unistd.h>
++#endif
+ 
+ /* The error returned on protocol failures */
+ #define PARSE_ERROR CKR_DEVICE_ERROR
+--- p11-kit/server.c
++++ p11-kit/server.c
+@@ -901,11 +901,15 @@
+ #include <aclapi.h>
+ #include <io.h>
+ #include <process.h>
++#include <processthreadsapi.h>
+ #include <windows.h>
+ 
+ #define DYN_ADVAPI32
++#ifndef WINBOOL
++#define WINBOOL BOOL
++#endif
+ 
+-typedef DWORD   (WINAPI *GetSecurityInfoFunc)
++typedef DWORD   (*WINAPI GetSecurityInfoFunc)
+                                   (HANDLE handle,
+                                    SE_OBJECT_TYPE ObjectType,
+                                    SECURITY_INFORMATION SecurityInfo,
+@@ -914,7 +918,7 @@
+                                    PACL *ppDacl,
+                                    PACL *ppSacl,
+                                    PSECURITY_DESCRIPTOR *ppSecurityDescriptor);
+-typedef DWORD   (WINAPI *SetSecurityInfoFunc)
++typedef DWORD   (*WINAPI SetSecurityInfoFunc)
+                                   (HANDLE handle,
+                                    SE_OBJECT_TYPE ObjectType,
+                                    SECURITY_INFORMATION SecurityInfo,
+@@ -922,24 +926,24 @@
+                                    PSID psidGroup,
+                                    PACL pDacl,
+                                    PACL pSacl);
+-typedef WINBOOL (WINAPI *OpenProcessTokenFunc)
++typedef WINBOOL (*WINAPI OpenProcessTokenFunc)
+                                   (HANDLE ProcessHandle,
+                                    DWORD DesiredAccess,
+                                    PHANDLE TokenHandle);
+-typedef WINBOOL (WINAPI *GetTokenInformationFunc)
++typedef WINBOOL (*WINAPI GetTokenInformationFunc)
+                                   (HANDLE TokenHandle,
+                                    TOKEN_INFORMATION_CLASS TokenInformationClass,
+                                    LPVOID TokenInformation,
+                                    DWORD TokenInformationLength,
+                                    PDWORD ReturnLength);
+-typedef WINBOOL (WINAPI *InitializeSecurityDescriptorFunc)
++typedef WINBOOL (*WINAPI InitializeSecurityDescriptorFunc)
+                                   (PSECURITY_DESCRIPTOR pSecurityDescriptor,
+                                    DWORD dwRevision);
+-typedef WINBOOL (WINAPI *SetSecurityDescriptorOwnerFunc)
++typedef WINBOOL (*WINAPI SetSecurityDescriptorOwnerFunc)
+                                   (PSECURITY_DESCRIPTOR pSecurityDescriptor,
+                                    PSID pOwner,
+                                    WINBOOL bOwnerDefaulted);
+-typedef DWORD   (WINAPI *SetEntriesInAclAFunc)
++typedef DWORD   (*WINAPI SetEntriesInAclAFunc)
+                                   (ULONG cCountOfExplicitEntries,
+                                    PEXPLICIT_ACCESS_A pListOfExplicitEntries,
+                                    PACL OldAcl,
+-- 
+2.24.1
+

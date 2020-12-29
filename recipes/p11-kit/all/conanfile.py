@@ -1,5 +1,6 @@
 from conans import ConanFile, Meson, tools
 from conans.errors import ConanInvalidConfiguration
+import contextlib
 import os
 
 
@@ -29,7 +30,7 @@ class P11KitConan(ConanFile):
         "with_systemd": False,
         "trust_paths": None,
     }
-
+    exports_sources = "patches/*"
     generators = "pkg_config"
 
     _meson = None
@@ -42,10 +43,16 @@ class P11KitConan(ConanFile):
     def _build_subfolder(self):
         return "build_subfolder"
 
+    def config_options(self):
+        if self.settings.os == "Windows":
+            # libtasn1 is unsupported on Windows
+            self.options.with_libtasn1 = False
+            self.options.with_systemd = False
+
     def configure(self):
         # FIXME: revisit Windows
-        if self.settings.os == "Windows":
-            raise ConanInvalidConfiguration("p11-kit cannot be built for Windows")
+        # if self.settings.os == "Windows":
+        #     raise ConanInvalidConfiguration("p11-kit cannot be built for Windows")
         del self.settings.compiler.libcxx
         del self.settings.compiler.cppstd
 
@@ -65,26 +72,30 @@ class P11KitConan(ConanFile):
             self.requires("libffi/3.3")
         if self.options.with_libtasn1:
             self.requires("libtasn1/4.16.0")
-        if self.options.with_systemd:
+        if self.options.get_safe("with_systemd"):
             self.requires("libsystemd/246.6")
         if self.options.hash == "freebl":
             raise ConanInvalidConfiguration("nss is not (yet) available on cci")
+        if self.settings.compiler == "Visual Studio":
+            self.requires("getopt-for-visual-studio/20200201")
+            self.requires("dirent/1.23.2")
 
     def build_requirements(self):
         self.build_requires("meson/0.56.0")
         self.build_requires("pkgconf/1.7.3")
+        if tools.os_info.is_windows and not tools.get_env("CONAN_BASH_PATH"):
+            self.build_requires("msys2/20200517")
 
     def _configure_meson(self):
         if self._meson:
             return self._meson
         feature_onoff = lambda v: "enabled" if v else "disabled"
         self._meson = Meson(self)
-        # self._meson.options["datadir"] = "bin/share"
         self._meson.options["hash_impl"] = self.options.hash
         self._meson.options["libexecdir"] = "libexec"
         self._meson.options["trust_module"] = feature_onoff(self.options.with_libtasn1)
         self._meson.options["libffi"] = feature_onoff(self.options.with_libffi)
-        self._meson.options["systemd"] = feature_onoff(self.options.with_systemd)
+        self._meson.options["systemd"] = feature_onoff(self.options.get_safe("with_systemd"))
         if self._trust_paths:
             self._meson.options["trust_paths"] = ":".join(self._trust_paths)
         self._meson.options["bash_completion"] = feature_onoff(False)
@@ -95,9 +106,26 @@ class P11KitConan(ConanFile):
         self._meson.configure(source_folder=self._source_subfolder, build_folder=self._build_subfolder)
         return self._meson
 
+    @contextlib.contextmanager
+    def _build_context(self):
+        env = {}
+        try:
+            env.update({
+                "MSYS_BIN": None,
+                "MSYS_ROOT": None,
+            })
+        except KeyError:
+            pass
+        with tools.remove_from_path("bash") if tools.os_info.is_windows else tools.no_op():
+            with tools.environment_append(env):
+                yield
+
     def build(self):
-        meson = self._configure_meson()
-        meson.build()
+        for patch in self.conan_data.get("patches", {}).get(self.version, []):
+            tools.patch(**patch)
+        with self._build_context():
+            meson = self._configure_meson()
+        meson.build() #args=["-j1", "-v"])
 
     def package(self):
         self.copy(pattern="COPYING", src=self._source_subfolder, dst="licenses")
