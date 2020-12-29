@@ -99,7 +99,7 @@ class AndroidNDKConan(ConanFile):
     def _fix_permissions(self):
         if os.name != "posix":
             return
-        for root, _, files in os.walk(self._packaged_tar_root):
+        for root, _, files in os.walk(self.package_folder):
             for filename in files:
                 filename = os.path.join(root, filename)
                 with open(filename, "rb") as f:
@@ -123,23 +123,17 @@ class AndroidNDKConan(ConanFile):
                         self.output.info("chmod on Mach-O file: '%s'" % filename)
                         self._chmod_plus_x(filename)
 
-    @property
-    def _packaged_tar_root(self):
-        return os.path.join(self.package_folder, "bin")
-
     def package(self):
         self.copy(pattern="*NOTICE", dst="licenses", src=self._source_subfolder)
         self.copy(pattern="*NOTICE.toolchain", dst="licenses", src=self._source_subfolder)
-        self.copy(pattern="*", dst=self._packaged_tar_root, src=self._source_subfolder, keep_path=True, symlinks=True)
-        self.copy("cmake-wrapper.cmd", dst=self._packaged_tar_root)
-        self.copy("cmake-wrapper", dst=self._packaged_tar_root)
+        self.copy(pattern="*", dst=self.package_folder, src=self._source_subfolder, keep_path=True, symlinks=True)
+        self.copy("cmake-wrapper.cmd")
+        self.copy("cmake-wrapper")
         self._fix_permissions()
-
-        tools.remove_files_by_mask(os.path.join(self.package_folder, "bin", "prebuilt", self._host_os_arch_android, "lib", "pkgconfig"), "*.pc")
 
     @property
     def _ndk_root(self):
-        return os.path.join(self._packaged_tar_root, "toolchains", "llvm", "prebuilt", self._host_os_arch_android)
+        return os.path.join(self.package_folder, "toolchains", "llvm", "prebuilt", self._host_os_arch_android)
 
     def _tool_name(self, tool):
         if "clang" in tool:
@@ -150,7 +144,7 @@ class AndroidNDKConan(ConanFile):
             return "%s-%s%s" % (self._llvm_triplet, tool, suffix)
 
     def _define_tool_var(self, name, value):
-        ndk_bin = os.path.join(self._ndk_root, "bin")
+        ndk_bin = os.path.join(self._ndk_root)
         path = os.path.join(ndk_bin, self._tool_name(value))
         self.output.info("Creating %s environment variable: %s" % (name, path))
         return path
@@ -164,20 +158,12 @@ class AndroidNDKConan(ConanFile):
         # android-ndk must be able to build and tested in non cross build mode.
         # So set those variables that do not depend on the target (target arch, target api level).
         # This enables ndk-build: https://developer.android.com/ndk/guides/ndk-build
-        bin_path = os.path.join(self._packaged_tar_root, "bin")
+        bin_path = os.path.join(self.package_folder)
         self.output.info("Appending PATH environment variable: {}".format(bin_path))
         self.env_info.PATH.append(bin_path)
 
         self.output.info("Creating ANDROID_NDK_HOME environment variable: %s" % self.package_folder)
-        self.env_info.ANDROID_NDK_HOME = self._packaged_tar_root
-
-        # FIXME: should `android-api` be added to exceptions of KB-H020?
-        self.cpp_info.builddirs.extend([
-            os.path.join("bin", "build", "cmake"),
-            os.path.join("bin", "sources", "cxx-stl", "llvm-libc++abi"),
-            os.path.join("bin", "bin", "sources", "third_party", "googletest", "cmake", "internal_utils.cmake"),
-            os.path.join("bin", "sources", "third_party", "googletest", "cmake", "internal_utils.cmake"),
-        ])
+        self.env_info.ANDROID_NDK_HOME = self.package_folder
 
         # The settings hereafter depend on the target system.
         if hasattr(self, "settings_target") and self.settings_target is not None:
@@ -200,16 +186,6 @@ class AndroidNDKConan(ConanFile):
             self.output.info("Creating ANDROID_NATIVE_API_LEVEL environment variable: %s" % self.settings_target.os.api_level)
             self.env_info.ANDROID_NATIVE_API_LEVEL = str(self.settings_target.os.api_level)
 
-            self._chmod_plus_x(os.path.join(self.package_folder, "bin", "cmake-wrapper"))
-            cmake_wrapper = "cmake-wrapper.cmd" if self.settings.os == "Windows" else "cmake-wrapper"
-            cmake_wrapper = os.path.join(self._packaged_tar_root, cmake_wrapper)
-            self.output.info("Creating CONAN_CMAKE_PROGRAM environment variable: %s" % cmake_wrapper)
-            self.env_info.CONAN_CMAKE_PROGRAM = cmake_wrapper
-
-            toolchain = os.path.join(self._packaged_tar_root, "build", "cmake", "android.toolchain.cmake")
-            self.output.info("Creating CONAN_CMAKE_TOOLCHAIN_FILE environment variable: %s" % toolchain)
-            self.env_info.CONAN_CMAKE_TOOLCHAIN_FILE = toolchain
-
             self.env_info.CC = self._define_tool_var("CC", "clang")
             self.env_info.CXX = self._define_tool_var("CXX", "clang++")
             self.env_info.LD = self._define_tool_var("LD", "ld")
@@ -229,6 +205,16 @@ class AndroidNDKConan(ConanFile):
             self.env_info.ANDROID_ABI = self._android_abi
             libcxx_str = str(self.settings_target.compiler.libcxx)
             self.env_info.ANDROID_STL = libcxx_str if libcxx_str.startswith("c++_") else "c++_shared"
+
+            self._chmod_plus_x(os.path.join(self.package_folder, "bin", "cmake-wrapper"))
+            cmake_wrapper = "cmake-wrapper.cmd" if self.settings.os == "Windows" else "cmake-wrapper"
+            cmake_wrapper = os.path.join(self.package_folder, cmake_wrapper)
+            self.output.info("Creating CONAN_CMAKE_PROGRAM environment variable: %s" % cmake_wrapper)
+            self.env_info.CONAN_CMAKE_PROGRAM = cmake_wrapper
+
+            toolchain = os.path.join(self.package_folder, "build", "cmake", "android.toolchain.cmake")
+            self.output.info("Creating CONAN_CMAKE_TOOLCHAIN_FILE environment variable: %s" % toolchain)
+            self.env_info.CONAN_CMAKE_TOOLCHAIN_FILE = toolchain
 
             self.env_info.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
             self.env_info.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "BOTH"
