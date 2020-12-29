@@ -1,6 +1,9 @@
 from conans import AutoToolsBuildEnvironment, ConanFile, tools
-from conans.errors import ConanException, ConanInvalidConfiguration
+from conans.errors import ConanInvalidConfiguration
 import os
+
+
+conan_minimum_requires = ">=1.29.1"
 
 
 class P11KitTLS(ConanFile):
@@ -12,7 +15,6 @@ class P11KitTLS(ConanFile):
     url = "https://github.com/conan-io/conan-center-index"
     settings = "os", "arch", "compiler", "build_type"
     options = {
-        "shared": [True, False],  # Add shared option explicitly, so settings p11-kit:shared=False will throw an error
         "with_libffi": [True, False],
         "with_libtasn1": [True, False],
         "with_hash": ["internal", "freebl"],
@@ -20,7 +22,6 @@ class P11KitTLS(ConanFile):
         "trust_paths": "ANY",
     }
     default_options = {
-        "shared": True,  # p11-kit cannot be used as a static library
         "with_libffi": True,
         "with_libtasn1": True,
         "with_hash": "internal",
@@ -38,8 +39,8 @@ class P11KitTLS(ConanFile):
     def configure(self):
         if self.settings.os == "Windows":
             raise ConanInvalidConfiguration("p11-kit cannot be built for Windows")
-        if not self.options.shared:
-            raise ConanInvalidConfiguration("p11-kit cannot be used as a static library")
+        # if not self.options.shared:
+        #     raise ConanInvalidConfiguration("p11-kit cannot be used as a static library")
         del self.settings.compiler.libcxx
         del self.settings.compiler.cppstd
 
@@ -56,33 +57,35 @@ class P11KitTLS(ConanFile):
 
     def requirements(self):
         if self.options.with_libffi:
-            self.requires("libffi/3.2.1")
+            self.requires("libffi/3.3")
         if self.options.with_libtasn1:
             self.requires("libtasn1/4.16.0")
         if self.options.with_systemd:
-            raise ConanInvalidConfiguration("systemd is not (yet) available on cci")
+            self.requires("libsystemd/246.6")
         if self.options.with_hash == "freebl":
-            self.requires("nss/3.47.1")
+            raise ConanInvalidConfiguration("nss is not (yet) available on cci")
+
+    def build_requirements(self):
+        self.build_requires("pkgconf/1.7.3")
 
     def _configure_autotools(self):
         if self._autotools:
             return self._autotools
         self._autotools = AutoToolsBuildEnvironment(self, win_bash=tools.os_info.is_windows)
+        yes_no = lambda v: "yes" if v else "no"
         conf_args = [
             "--with-hash-impl={}".format(self.options.with_hash),
-            "--with-libtasn1" if self.options.with_libtasn1 else "--without-libtasn1",
-            "--with-libffi" if self.options.with_libffi else "--without-libffi",
+            "--with-libtasn1={}".format(yes_no(self.options.with_libtasn1)),
+            "--with-libffi={}".format(yes_no(self.options.with_libffi)),
             "--with-systemd" if self.options.with_systemd else "--without-systemd",
+            "--datarootdir={}".format(os.path.join(self.package_folder, "bin", "share").replace("\\", "/")),
             "--with-trust-paths={}".format(":".join(self._trust_paths)) if self._trust_paths else "--without-trust-paths",
             "--disable-nls",
             "--disable-rpath",
             "--without-bash-completion",
-            "--datarootdir={}".format(os.path.join(self.package_folder, "bin", "share")),
+            "--enable-shared",
+            "--disable-static",
         ]
-        if self.options.shared:
-            conf_args.extend(["--enable-shared", "--disable-static"])
-        else:
-            conf_args.extend(["--disable-shared", "--enable-static"])
         self._autotools.configure(args=conf_args, configure_dir=self._source_subfolder)
         return self._autotools
 
@@ -95,11 +98,7 @@ class P11KitTLS(ConanFile):
         autotools = self._configure_autotools()
         autotools.install()
 
-        for root, _, files in os.walk(os.path.join(self.package_folder, "lib")):
-            for file in files:
-                if os.path.splitext(file)[1] == ".la":
-                    os.unlink(os.path.join(root, file))
-
+        tools.remove_files_by_mask(os.path.join(self.package_folder, "lib"), "*.la")
         tools.rmdir(os.path.join(self.package_folder, "lib", "pkgconfig"))
         tools.rmdir(os.path.join(self.package_folder, "etc"))
 
