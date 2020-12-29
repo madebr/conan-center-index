@@ -81,6 +81,7 @@ class P11KitConan(ConanFile):
         self._meson = Meson(self)
         # self._meson.options["datadir"] = "bin/share"
         self._meson.options["hash_impl"] = self.options.hash
+        self._meson.options["libexecdir"] = "libexec"
         self._meson.options["trust_module"] = feature_onoff(self.options.with_libtasn1)
         self._meson.options["libffi"] = feature_onoff(self.options.with_libffi)
         self._meson.options["systemd"] = feature_onoff(self.options.with_systemd)
@@ -103,9 +104,10 @@ class P11KitConan(ConanFile):
         meson = self._configure_meson()
         meson.install()
 
-        # tools.remove_files_by_mask(os.path.join(self.package_folder, "lib"), "*.la")
-        # tools.rmdir(os.path.join(self.package_folder, "lib", "pkgconfig"))
-        # tools.rmdir(os.path.join(self.package_folder, "etc"))
+        tools.rmdir(os.path.join(self.package_folder, "lib", "pkgconfig"))
+        tools.rmdir(os.path.join(self.package_folder, "libexec"))
+        tools.rmdir(os.path.join(self.package_folder, "etc"))
+        tools.rmdir(os.path.join(self.package_folder, "share"))
 
     def package_info(self):
         self.cpp_info.libs = ["p11-kit"]
