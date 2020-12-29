@@ -6,7 +6,7 @@ import os
 conan_minimum_requires = ">=1.29.1"
 
 
-class P11KitTLS(ConanFile):
+class P11KitConan(ConanFile):
     name = "p11-kit"
     description = "Provides a way to load and enumerate PKCS#11 modules"
     homepage = "https://p11-glue.github.io/p11-glue/p11-kit.html"
