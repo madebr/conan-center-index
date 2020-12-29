@@ -1,4 +1,4 @@
 sources:
   "3.60":
     url: "https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_60_RTM/src/nss-3.60.tar.gz"
-    sha256: "3bf7e0ed7db98803f134c527c436cc68415ff17257d34bd75de14e9a09d13651"
+    sha256: "84abd5575ab874c53ae511bd461e5d0868d1a1b384ee40753154cdd1d590fe3d"
