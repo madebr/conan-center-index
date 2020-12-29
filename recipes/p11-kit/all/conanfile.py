@@ -1,4 +1,4 @@
-from conans import AutoToolsBuildEnvironment, ConanFile, tools
+from conans import ConanFile, Meson, tools
 from conans.errors import ConanInvalidConfiguration
 import os
 
@@ -15,32 +15,37 @@ class P11KitTLS(ConanFile):
     url = "https://github.com/conan-io/conan-center-index"
     settings = "os", "arch", "compiler", "build_type"
     options = {
+        # p11-kit is only available as a shared library
         "with_libffi": [True, False],
         "with_libtasn1": [True, False],
-        "with_hash": ["internal", "freebl"],
+        "hash": ["internal", "freebl"],
         "with_systemd": [True, False],
         "trust_paths": "ANY",
     }
     default_options = {
         "with_libffi": True,
         "with_libtasn1": True,
-        "with_hash": "internal",
+        "hash": "internal",
         "with_systemd": False,
         "trust_paths": None,
     }
+
     generators = "pkg_config"
 
-    _autotools = None
+    _meson = None
 
     @property
     def _source_subfolder(self):
         return "source_subfolder"
 
+    @property
+    def _build_subfolder(self):
+        return "build_subfolder"
+
     def configure(self):
+        # FIXME: revisit Windows
         if self.settings.os == "Windows":
             raise ConanInvalidConfiguration("p11-kit cannot be built for Windows")
-        # if not self.options.shared:
-        #     raise ConanInvalidConfiguration("p11-kit cannot be used as a static library")
         del self.settings.compiler.libcxx
         del self.settings.compiler.cppstd
 
@@ -62,50 +67,53 @@ class P11KitTLS(ConanFile):
             self.requires("libtasn1/4.16.0")
         if self.options.with_systemd:
             self.requires("libsystemd/246.6")
-        if self.options.with_hash == "freebl":
+        if self.options.hash == "freebl":
             raise ConanInvalidConfiguration("nss is not (yet) available on cci")
 
     def build_requirements(self):
+        self.build_requires("meson/0.56.0")
         self.build_requires("pkgconf/1.7.3")
 
-    def _configure_autotools(self):
-        if self._autotools:
-            return self._autotools
-        self._autotools = AutoToolsBuildEnvironment(self, win_bash=tools.os_info.is_windows)
-        yes_no = lambda v: "yes" if v else "no"
-        conf_args = [
-            "--with-hash-impl={}".format(self.options.with_hash),
-            "--with-libtasn1={}".format(yes_no(self.options.with_libtasn1)),
-            "--with-libffi={}".format(yes_no(self.options.with_libffi)),
-            "--with-systemd" if self.options.with_systemd else "--without-systemd",
-            "--datarootdir={}".format(os.path.join(self.package_folder, "bin", "share").replace("\\", "/")),
-            "--with-trust-paths={}".format(":".join(self._trust_paths)) if self._trust_paths else "--without-trust-paths",
-            "--disable-nls",
-            "--disable-rpath",
-            "--without-bash-completion",
-            "--enable-shared",
-            "--disable-static",
-        ]
-        self._autotools.configure(args=conf_args, configure_dir=self._source_subfolder)
-        return self._autotools
+    def _configure_meson(self):
+        if self._meson:
+            return self._meson
+        feature_onoff = lambda v: "enabled" if v else "disabled"
+        self._meson = Meson(self)
+        # self._meson.options["datadir"] = "bin/share"
+        self._meson.options["hash_impl"] = self.options.hash
+        self._meson.options["trust_module"] = feature_onoff(self.options.with_libtasn1)
+        self._meson.options["libffi"] = feature_onoff(self.options.with_libffi)
+        self._meson.options["systemd"] = feature_onoff(self.options.with_systemd)
+        if self._trust_paths:
+            self._meson.options["trust_paths"] = ":".join(self._trust_paths)
+        self._meson.options["bash_completion"] = feature_onoff(False)
+        self._meson.options["gtk_doc"] = "false"
+        self._meson.options["nls"] = "false"
+        self._meson.options["test"] = "false"
+
+        self._meson.configure(source_folder=self._source_subfolder, build_folder=self._build_subfolder)
+        return self._meson
 
     def build(self):
-        autotools = self._configure_autotools()
-        autotools.make()
+        meson = self._configure_meson()
+        meson.build()
 
     def package(self):
         self.copy(pattern="COPYING", src=self._source_subfolder, dst="licenses")
-        autotools = self._configure_autotools()
-        autotools.install()
+        meson = self._configure_meson()
+        meson.install()
 
-        tools.remove_files_by_mask(os.path.join(self.package_folder, "lib"), "*.la")
-        tools.rmdir(os.path.join(self.package_folder, "lib", "pkgconfig"))
-        tools.rmdir(os.path.join(self.package_folder, "etc"))
+        # tools.remove_files_by_mask(os.path.join(self.package_folder, "lib"), "*.la")
+        # tools.rmdir(os.path.join(self.package_folder, "lib", "pkgconfig"))
+        # tools.rmdir(os.path.join(self.package_folder, "etc"))
 
     def package_info(self):
         self.cpp_info.libs = ["p11-kit"]
         self.cpp_info.includedirs.append(os.path.join("include", "p11-kit-1"))
         self.cpp_info.names["pkg_config"] = "p11-kit-1"
+
+        if self.settings.os in ("Linux", "FreeBSD"):
+            self.cpp_info.system_libs = ["pthread"]
 
         bin_path = os.path.join(self.package_folder, "bin")
         self.output.info("Appending PATH environment variable: {}".format(bin_path))
