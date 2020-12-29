@@ -107,7 +107,9 @@ class GraphvizConan(ConanFile):
 
     @contextmanager
     def _build_context(self):
-        env = {}
+        env = {
+            "PS2PDF": ":",
+        }
         if self.settings.compiler == "Visual Studio":
             with tools.vcvars(self.settings):
                 env.update({
@@ -222,7 +224,8 @@ class GraphvizConan(ConanFile):
         for patch in self.conan_data.get("patches", {}).get(self.version, []):
             tools.patch(**patch)
         with tools.chdir(self._source_subfolder):
-            self.run("./autogen.sh NOCONFIG", win_bash=tools.os_info.is_windows)
+            with tools.environment_append({"AUTOMAKE_CONAN_INCLUDES": tools.get_env("AUTOMAKE_CONAN_INCLUDES", "").replace(";", ":")}):
+                self.run("./autogen.sh NOCONFIG", win_bash=tools.os_info.is_windows)
         with self._build_context():
             autotools = self._configure_autotools()
             autotools.make()
