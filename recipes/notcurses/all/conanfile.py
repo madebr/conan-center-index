@@ -32,7 +32,6 @@ class NotCursesConan(ConanFile):
 
     def build_requirements(self):
         self.build_requires("pkgconf/1.7.3")
-        self.build_requires("ncurses/6.2")
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
@@ -40,6 +39,7 @@ class NotCursesConan(ConanFile):
 
     def requirements(self):
         self.requires("libunistring/0.9.10")
+        self.requires("ncurses/6.2")
         if self.options.with_multimedia == "ffmpeg":
             # FIXME: missing ffmpeg recipe
             raise ConanInvalidConfiguration("ffmpeg is not (yet) available on cci")
