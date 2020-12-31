@@ -28,7 +28,7 @@ class NotCursesConan(ConanFile):
 
     @property
     def _build_subfolder(self):
-        return "source_subfolder"
+        return "build_subfolder"
 
     def build_requirements(self):
         self.build_requires("pkgconf/1.7.3")
@@ -91,5 +91,5 @@ class NotCursesConan(ConanFile):
 
         self.cpp_info.components["libnotcurses"].libs = ["notcurses"]
         self.cpp_info.components["libnotcurses++"].libs = ["notcurses++"]
-        if self.settings.os == "Linux":
+        if self.settings.os in ("FreeBSD", "Linux"):
             self.cpp_info.system_libs = ["m", "rt"]
