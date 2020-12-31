@@ -105,18 +105,16 @@ class GnuTLSConan(ConanFile):
             self.requires("p11-kit/0.23.20")
 
     def build_requirements(self):
-        if tools.os_info.is_windows and not tools.get_env("CONAN_BASH_PATH") and \
-                tools.os_info.detect_windows_subsystem() != "msys2":
-            self.build_requires("msys2/20190524")
+        if tools.os_info.is_windows and not tools.get_env("CONAN_BASH_PATH"):
+            self.build_requires("msys2/20200517")
         if self.settings.compiler == "Visual Studio":
-            self.build_requires("automake/1.16.2")
+            self.build_requires("automake/1.16.3")
 
     @contextmanager
     def _build_context(self):
-        env = {}
         if self.settings.compiler == "Visual Studio":
-            with tools.vcvars(self.settings):
-                env.update({
+            with tools.vcvars(self):
+                env = {
                     "AR": "{} lib".format(tools.unix_path(self.deps_user_info["automake"].ar_lib)),
                     "CC": "{} cl -nologo".format(tools.unix_path(self.deps_user_info["automake"].compile)),
                     "CXX": "{} cl -nologo".format(tools.unix_path(self.deps_user_info["automake"].compile)),
@@ -124,47 +122,45 @@ class GnuTLSConan(ConanFile):
                     "OBJDUMP": ":",
                     "RANLIB": ":",
                     "STRIP": ":",
-                })
+                }
                 with tools.environment_append(env):
                     yield
         else:
-            with tools.environment_append(env):
-                yield
+            yield
 
     def _configure_autotools(self):
         if self._autotools:
             return self._autotools
         self._autotools = AutoToolsBuildEnvironment(self, win_bash=tools.os_info.is_windows)
-        enable_disable = lambda option, name : "--{}-{}".format("enable" if option else "disable", name)
+        yes_no = lambda v: "yes" if v else "no"
         conf_args = [
-            enable_disable(self.options.tools, "tools"),
-            enable_disable(self.options.hardware_acceleration, "hardware-acceleration"),
-            enable_disable(self.options.tls13_interoperability, "tls13-interop"),
-            enable_disable(self.options.packlock_acceleration, "padlock"),
-            enable_disable(self.options.sha1_support, "sha1-support"),
-            enable_disable(self.options.ssl3, "ssl3-support"),
-            enable_disable(self.options.ssl2_client_hello, "ssl2-support"),
-            enable_disable(self.options.dtls_srtp_support, "dtls-srtp-support"),
-            enable_disable(self.options.alpn_support, "alpn-support"),
-            enable_disable(self.options.heartbeat_support, "heartbeat-support"),
-            enable_disable(self.options.srp_authentication, "srp-authentication"),
-            enable_disable(self.options.psk_authentication, "psk-authentication"),
-            enable_disable(self.options.anon_authentication, "anon-authentication"),
-            enable_disable(self.options.dhe_support, "dhe"),
-            enable_disable(self.options.ecdhe_support, "ecdhe"),
-            enable_disable(self.options.gost_support, "gost"),
-            enable_disable(self.options.cryptodev_support, "cryptodev"),
-            enable_disable(self.options.ocsp_support, "ocsp"),
-            enable_disable(self.options.openssl_compatibility, "openssl-compatibility"),
-            enable_disable(self.options.with_cxx, "cxx"),
-            "--with-p11-kit" if self._with_p11_kit else "--without-p11-kit",
+            "--enable-shared={}".format(yes_no(self.options.shared)),
+            "--enable-static={}".format(yes_no(not self.options.shared)),
+            "--enable-tools={}".format(yes_no(self.options.tools)),
+            "--enable-tools={}".format(yes_no(self.options.tools)),
+            "--enable-hardware-acceleration={}".format(yes_no(self.options.hardware_acceleration)),
+            "--enable-tls13-interop={}".format(yes_no(self.options.tls13_interoperability)),
+            "--enable-padlock={}".format(yes_no(self.options.packlock_acceleration)),
+            "--enable-sha1-support={}".format(yes_no(self.options.sha1_support)),
+            "--enable-ssl3-support={}".format(yes_no(self.options.ssl3)),
+            "--enable-ssl2-support={}".format(yes_no(self.options.ssl2_client_hello)),
+            "--enable-dtls-srtp-support={}".format(yes_no(self.options.dtls_srtp_support)),
+            "--enable-alpn-support={}".format(yes_no(self.options.alpn_support)),
+            "--enable-heartbeat-support={}".format(yes_no(self.options.heartbeat_support)),
+            "--enable-srp-authentication={}".format(yes_no(self.options.srp_authentication)),
+            "--enable-psk-authentication={}".format(yes_no(self.options.psk_authentication)),
+            "--enable-anon-authentication={}".format(yes_no(self.options.anon_authentication)),
+            "--enable-dhe={}".format(yes_no(self.options.dhe_support)),
+            "--enable-ecdhe={}".format(yes_no(self.options.ecdhe_support)),
+            "--enable-gost={}".format(yes_no(self.options.gost_support)),
+            "--enable-cryptodev={}".format(yes_no(self.options.cryptodev_support)),
+            "--enable-ocsp={}".format(yes_no(self.options.ocsp_support)),
+            "--enable-openssl-compatibility={}".format(yes_no(self.options.openssl_compatibility)),
+            "--enable-cxx={}".format(yes_no(self.options.with_cxx)),
+            "--with-p11-kit={}".format(yes_no(self._with_p11_kit)),
             "--disable-doc",
             "--disable-tests",
         ]
-        if self.options.shared:
-            conf_args.extend(["--enable-shared", "--disable-static"])
-        else:
-            conf_args.extend(["--disable-shared", "--enable-static"])
 
         self._autotools.configure(args=conf_args, configure_dir=self._source_subfolder)
         return self._autotools
