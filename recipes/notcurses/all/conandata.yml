@@ -1,8 +1,8 @@
 sources:
-  1.7.1:
-    url: https://github.com/dankamongmen/notcurses/releases/download/v1.7.1/notcurses_1.7.1+dfsg.1.orig.tar.xz
-    sha256: e2d5cd6337ce1fb7a3dcc845cb020c701880b4e6324c1e2b59ec8742d89b56c8
-patches:
-  1.7.1:
-  - base_path: source_subfolder
-    patch_file: patches/0001-cmake-pkg-config-replace-marker.patch
+  "2.1.2":
+    url: "https://github.com/dankamongmen/notcurses/releases/download/v2.1.2/notcurses_2.1.2+dfsg.1.orig.tar.xz"
+    sha256: "1ddf0ee0dd4d4da6ef210397b6ac021acf3e5bfcab2aa8c25b95d14cab20a86f"
+#patches:
+#  1.7.1:
+#  - base_path: source_subfolder
+#    patch_file: patches/0001-cmake-pkg-config-replace-marker.patch

@@ -30,6 +30,14 @@ class NotCursesConan(ConanFile):
     def _build_subfolder(self):
         return "build_subfolder"
 
+    def config_options(self):
+        if self.settings.os == "Windows":
+            del self.options.fPIC
+
+    def configure(self):
+        if self.options.shared:
+            del self.options.fPIC
+
     def build_requirements(self):
         self.build_requires("pkgconf/1.7.3")
 
@@ -38,7 +46,7 @@ class NotCursesConan(ConanFile):
         os.rename("notcurses-{}".format(self.version), self._source_subfolder)
 
     def requirements(self):
-        self.requires("libunistring/0.9.10")
+        # self.requires("libunistring/0.9.10")
         self.requires("ncurses/6.2")
         if self.options.with_multimedia == "ffmpeg":
             # FIXME: missing ffmpeg recipe
@@ -56,6 +64,7 @@ class NotCursesConan(ConanFile):
             "openimageio": "oiio",
             "ffmpeg": "ffmpeg",
         }.get(str(self.options.with_multimedia), str(self.options.with_multimedia))
+        self._cmake.definitions["CMAKE_BUILD_TYPE"] = self.settings.build_type
         self._cmake.definitions["DFSG_BUILD"] = True
         self._cmake.definitions["USE_MULTIMEDIA"] = use_multimedia
         self._cmake.definitions["USE_QRCODEGEN"] = False
@@ -67,16 +76,16 @@ class NotCursesConan(ConanFile):
         self._cmake.configure()
         return self._cmake
 
-    def _patch_sources(self):
-        for patch in self.conan_data.get("patches", {}).get(self.version, []):
-            tools.patch(**patch)
-        tools.replace_in_file(os.path.join(self._source_subfolder, "CMakeLists.txt"),
-                              "TINFONAME", "tinfo" + self.deps_user_info["ncurses"].lib_suffix)
-        tools.replace_in_file(os.path.join(self._source_subfolder, "CMakeLists.txt"),
-                              "NCURSESNAME", "ncurses" + self.deps_user_info["ncurses"].lib_suffix)
+    # def _patch_sources(self):
+    #     for patch in self.conan_data.get("patches", {}).get(self.version, []):
+    #         tools.patch(**patch)
+    #     tools.replace_in_file(os.path.join(self._source_subfolder, "CMakeLists.txt"),
+    #                           "TINFONAME", "tinfo" + self.deps_user_info["ncurses"].lib_suffix)
+    #     tools.replace_in_file(os.path.join(self._source_subfolder, "CMakeLists.txt"),
+    #                           "NCURSESNAME", "ncurses" + self.deps_user_info["ncurses"].lib_suffix)
 
     def build(self):
-        self._patch_sources()
+        # self._patch_sources()
         cmake = self._configure_cmake()
         cmake.build()
 
